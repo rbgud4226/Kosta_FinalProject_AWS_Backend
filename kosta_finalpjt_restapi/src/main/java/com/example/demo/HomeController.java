@@ -159,7 +159,7 @@ public class HomeController {
 		Authentication auth = ambuilder.getObject().authenticate(upauthtoken);
 		//isAuthenticated(): 인증결과 반환(true/false)
 		boolean flag = auth.isAuthenticated();
-		System.out.println("인증결과:" + flag);
+		System.out.println("인증결s과:" + flag);
 		Map map = new HashMap();
 		if (flag) {
 			//인증 성공시 토큰 생성
