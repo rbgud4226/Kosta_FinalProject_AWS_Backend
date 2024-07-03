@@ -1,0 +1,64 @@
+.form_wrapper{
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.login_wrapper{
+    width: 600px;
+    padding: 100px 30px;
+    background: white;
+    border-radius: 15px;
+}
+
+body{
+    position: relative;
+    height: 100vh;
+}
+#posts_list{
+
+}
+.form-group{
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    justify-content: space-between;
+}
+.form-group label{
+    width: 20%;
+}
+.login_check{
+    display: flex;
+    align-items: center;
+}
+.login_checkbox{
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+}
+.w40{
+    width: 40%;
+}
+.form-group .w25{
+    width: 25%;
+}
+.join_link{
+    padding: 10px 0;
+    text-align: center;
+    width: 600px;
+    background: white;
+    border-radius: 15px;
+    margin: 15px auto;
+}
+.alert-danger{
+    margin-top: 10px;
+}
+.join_btn{
+    width: 100%;
+    margin-bottom: 8px;
+}
+.join_btn_wrapper{
+    flex-direction: column;
+}

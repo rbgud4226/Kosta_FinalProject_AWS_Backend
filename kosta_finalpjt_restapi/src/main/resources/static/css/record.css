@@ -1,0 +1,159 @@
+.record_top{
+    width: 100%;
+    height: 360px;
+    border-bottom: 2px solid #E2E4EC;
+}
+.record_top_wrapper{
+    padding-top: 100px;
+}
+.record_msg{
+    margin-left: 55px;
+}
+.record_sta{
+    position: relative;
+    top: 30px;
+    width: 240px;
+    height: 72px;
+}
+.record_btn_wrapper{
+    display: flex;
+    justify-content: center;
+    padding-top: 35px;
+}
+.record_marright{
+    margin-right: 20px;
+}
+.record_table{
+    border-radius: 10px 10px 0 0;
+    margin-top: 10px;
+    padding-bottom: 30px;
+}
+.record_table_title{
+    display: flex;
+    align-items: center;
+    padding: 40px 0;
+    width: 80%;
+    margin: 0 auto;
+}
+.record_table_title>p{
+    font-size: 20px;
+    width: 43%;
+}
+/* 화살표 */
+.arrow{
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-left: 8px solid #2e2f31;
+    border-bottom: 8px solid #2e2f31;
+    border-radius: 5px;
+}
+.arrow_off{
+    border-left: 8px solid #828488;
+    border-bottom: 8px solid #828488;
+}
+.right_arrow {
+    transform: rotate(-135deg);
+}
+.left_arrow {
+    transform: rotate(45deg);
+}
+/* 테이블 기록 */
+.record_table_wrapper{
+    width: 80%;
+    border-top: 2px solid #E2E4EC;
+    margin: 0 auto;
+    margin-bottom: 100px;
+}
+.record_rtable{
+    width: 100%;
+    table-layout: fixed;
+    text-align: center;
+}
+.record_rtable>thead{
+    line-height: 3rem;
+    border-bottom: 2px solid #E2E4EC;
+}
+.record_list>tr{
+    line-height: 3rem;
+    border-bottom: 2px solid #E2E4EC;
+}
+
+/* 부서장용 */
+.title{
+    font-size: 30px;
+    font-weight: 600;
+    padding-bottom: 15px;
+}
+.record_dept_wrapper{
+    padding: 50px 0;
+}
+.record_box_wrapper{
+    display: flex;
+    justify-content: space-between;
+
+}
+.record_data{
+    width: calc(100% / 4 - 10px);
+    height: 200px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+.record_icon{
+    width: 30%;
+}
+.record_text_wrapper{
+    width: 60%;
+}
+.record_text_title{
+    font-size: 20px;
+    font-weight: 600;
+    color: #2e2f31;
+    padding-bottom: 5px;
+}
+.record_text_content{
+    font-size: 20px;
+}
+/* admin chart */
+.chart_wrapper{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 20px;
+    padding-bottom: 40px;
+}
+.chart_title{
+    font-size: 20px;
+    font-weight: 600;
+    color: #2e2f31;
+    padding-bottom: 30px;
+}
+.chart{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 15px;
+}
+.chart:first-child{
+    padding-right: 20px;
+}
+.chart_can{
+    padding: 30px 10px;
+    background: white;
+}
+.dept_table{
+    justify-content: center;
+}
+.dept_select_wrapper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 20px;
+    padding-top: 50px;
+}
+.dept_text{
+    padding-right: 10px;
+    font-weight: 600;
+}

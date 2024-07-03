@@ -1,0 +1,185 @@
+.chart_body {
+	position: relative;
+	margin-bottom: 20px;
+}
+
+.chart_body h2 {
+	margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+.chart_body p {
+	display: inline;
+}
+
+.chart_body hr {
+	width: 50%;
+	margin-left: 0px;
+}
+/********************** chart **********************/
+.chart_head {
+	font-size: 30px;
+	margin-left: 10px;
+	margin-bottom: 15px;
+	margin-top: 10px;
+	height: 60px;
+}
+
+.chart_menu {
+	display: flex;
+	justify-content: end;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	margin-right: 15px;
+}
+
+.chart_menu button {
+	margin-left: 5px;
+}
+
+.chart_area {
+	padding: 5px;
+	height: 400px;
+	margin-bottom: 15px;
+}
+
+.chart_area_gantt {
+	padding: 5px;
+}
+
+.chart_area_head {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.chart_area_scroll {
+	height: 350px;
+	overflow-y: scroll;
+}
+
+.chart_area table {
+	width: 100%;
+	text-align: center;
+	border-top: black 2px solid;
+	border-bottom: black 2px solid;
+	border-collapse: collapse;
+	height: 50px;
+	overflow-y: scroll;
+}
+
+.chart_area table button {
+	border: 0;
+	background-color: transparent;
+}
+
+.chart_area th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background-color: rgba(13, 98, 253, 0.83);
+	color: white;
+	align-content: center;
+	border-bottom: black 1px;
+}
+
+.chart_area tr {
+	border-bottom: black 1px solid;
+	margin: auto;
+	height: 30px;
+}
+
+.chart_area td {
+	align-content: center;
+}
+
+.chart_area tr:last-child {
+	border-bottom: none;
+}
+
+.board_body {
+	display: flex;
+	justify-content: space-between;
+}
+
+.board_body_box {
+	/* border: 1px black solid; */
+	width: 48%;
+	height: 300px;
+}
+
+/********************** modal **********************/
+.modal_wrap {
+	width: 350px;
+	height: 400px;
+	position: absolute;
+	border: 2px solid black;
+	top: 50%;
+	left: 50%;
+	background: #eee;
+	z-index: 2;
+	display: none;
+	transform: translate(-50%, -50%);
+}
+
+.modal_wrap i {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+}
+
+.modal_wrap.show-modal {
+	display: block;
+}
+
+.modal_background.show-modal {
+	display: block;
+}
+
+.modal_background {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	top: 0;
+	left: 0;
+	z-index: 1;
+	display: none;
+}
+
+.modal_close {
+	position: absolute;
+}
+
+.modal_text {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+/********************** calendar **********************/
+.calendar_style {
+	width: 100%;
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+/********************** gantt **********************/
+.board_table{
+	width: 100%;
+	text-align: center;
+	border-top: black 2px solid;
+	border-bottom: black 2px solid;
+	border-collapse: collapse;
+}
+
+.board_table th{
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background-color: rgba(13, 98, 253, 0.83);
+	color: white;
+	align-content: center;
+	border-bottom: black 1px;
+	height: 25px;
+}
