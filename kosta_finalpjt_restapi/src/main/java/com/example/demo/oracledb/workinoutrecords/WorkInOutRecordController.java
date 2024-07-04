@@ -37,7 +37,6 @@ import jakarta.servlet.http.HttpSession;
 
 
 @Controller
-@RequestMapping("/auth/record")
 public class WorkInOutRecordController {
   @Autowired
   private WorkInOutRecordService service;
@@ -55,7 +54,8 @@ public class WorkInOutRecordController {
 
   //개인
   //출퇴근 기록 페이지로 이동하기
-  @GetMapping("/my")
+  @ResponseBody
+  @GetMapping("/auth/record/my")
   public String myrecord(HttpSession session, ModelMap map) {
     String loginid = (String) session.getAttribute("loginId");
     MembersDto md = mservice.getByuserId(loginid);
@@ -217,7 +217,7 @@ public class WorkInOutRecordController {
   }
 
   //부서 근태 부서장 페이지 이동
-  @GetMapping("/dept")
+  @GetMapping("/auth/record/dept")
   public ModelAndView deptList(int dept) {
     ModelAndView mav = new ModelAndView("record/dept");
     mav.addObject("record",deptLeader(deptRecord(dept, 0)));
@@ -227,7 +227,7 @@ public class WorkInOutRecordController {
 
   //관리자(부서별 데이터 가져오기)
   @ResponseBody
-  @GetMapping("/list")
+  @GetMapping("/auth/record/list")
   public ArrayList<ChartDeptMember> deptRecord(int dept, int cnt) {
     // 현재 날짜 가져오기
     LocalDate currentDate = LocalDate.now();
