@@ -77,7 +77,6 @@ public class MessageService {
 		String partN = usersService.getById2(chatMessage.getSender()).getUsernm();
 		chatMessage.setContent(osg);
 		chatMessage.setPartid(partN);
-		chatMessage.setSendDate(chatRoomService.createSendDate());
 	}
 	
 	public void fileTypeMessage(MessageDto chatMessage, String roomId) {

@@ -1,5 +1,6 @@
 package com.example.demo.oracledb.chat.Message;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,15 +9,17 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+@RestController
+@CrossOrigin(origins = "*")
+@RequestMapping("/auth")
 public class MessageController {
 	@Autowired
 	private MessageService messageService;
@@ -53,16 +56,18 @@ public class MessageController {
 	    }
 	}
 	
-	@GetMapping("/chat/message/room/{roomId}")
-	@ResponseBody
-	public ArrayList<MessageDto> getMessages(@PathVariable String roomId) {
-		ArrayList<MessageDto> list = messageService.getMessageByRoomId(roomId);
-		return list;
+	//채팅방 메세지 호출
+	@GetMapping("/chat/message/room")
+	public Map getMessages(String chatroomid) {
+		Map map = new HashMap();
+		ArrayList<MessageDto> list = messageService.getMessageByRoomId(chatroomid);
+		map.put("list", list);
+		return map;
 	}
-
+	
+	//파일 업로드
 	@PostMapping("/chat/message/upload")
-	@ResponseBody
-	public Map<String, String> FileUpload(@RequestParam("file") MultipartFile file) {
+	public Map FileUpload(@RequestParam("file") MultipartFile file) {
 		return messageService.FileuploadMethod(file);
 	}
 }

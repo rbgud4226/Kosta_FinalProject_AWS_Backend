@@ -1,5 +1,7 @@
 package com.example.demo.oracledb.chat.Message;
 
+import java.sql.Timestamp;
+
 import com.example.demo.oracledb.chat.Room.ChatRoom;
 
 import lombok.AllArgsConstructor;
@@ -15,7 +17,7 @@ public class MessageDto {
 	private Long id;
 	private ChatRoom room;
 	private String content;
-	private String sendDate;
+	private Timestamp sendDate;
 	private String sender;
 	private String type;
 	private String fileName;
@@ -23,7 +25,7 @@ public class MessageDto {
 	private String fileRoot;
 	private String partid;
 
-	public MessageDto(Long id, ChatRoom room, String sendDate, String sender, String type, String partid) {
+	public MessageDto(Long id, ChatRoom room, Timestamp sendDate, String sender, String type, String partid) {
 		super();
 		this.id = id;
 		this.room = room;
