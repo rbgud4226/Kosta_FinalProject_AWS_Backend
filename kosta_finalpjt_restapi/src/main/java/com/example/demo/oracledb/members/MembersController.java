@@ -59,9 +59,18 @@ public class MembersController {
 	private String dirName = "/src/main/resources/static/img/member/";
 
 	@GetMapping("/member/memberlist")
-	public ModelMap memberlist(ModelMap map) {
-		ArrayList<MembersDto> mlist = mservice.getAll();
-		return map.addAttribute("mlist", mlist);
+	public Map memberlist() {
+		boolean flag = true;
+		ArrayList<MembersDto> mlist = new ArrayList<MembersDto>();
+		try {
+			mlist = mservice.getAll();
+		} catch (Exception e) {
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("mlist", mlist);
+		return map;
 //		return "member/memberlist";
 	}
 
@@ -77,72 +86,88 @@ public class MembersController {
 	@ResponseBody
 	@GetMapping("/member/getdeptby")
 	public Map getmemberby(String val, int type) {
+		boolean flag = true;
 		ArrayList<MembersDto> mlist = new ArrayList<MembersDto>();
-		if (!val.equals("")) {
-			if (type == 1) {
-				if (val.equals("0")) {
-					mlist = null;
-				} else {
-					mlist = mservice.getByDeptNmLike(val);
-				}
-			} else if (type == 2) {
-				ArrayList<UsersDto> ulist = uservice.getByUsernmLike(val);
-				for (UsersDto udto : ulist) {
-					if (udto != null && mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)) != null) {
-						mlist.add(mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)));
+		try {
+			if (!val.equals("")) {
+				if (type == 1) {
+					if (val.equals("0")) {
+						mlist = null;
+					} else {
+						mlist = mservice.getByDeptNmLike(val);
 					}
+				} else if (type == 2) {
+					ArrayList<UsersDto> ulist = uservice.getByUsernmLike(val);
+					for (UsersDto udto : ulist) {
+						if (udto != null
+								&& mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)) != null) {
+							mlist.add(mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)));
+						}
+					}
+				} else if (type == 3) {
+					mlist = mservice.getByJobLvLike(val);
 				}
-			} else if (type == 3) {
-				mlist = mservice.getByJobLvLike(val);
+			} else {
+				mlist = null;
 			}
-		} else {
-			mlist = null;
+		} catch (Exception e) {
+			flag = false;
 		}
 		System.out.println(mlist);
 //		ModelAndView mav = new ModelAndView("member/memberlist");
 //		mav.addObject("type", type);
 //		mav.addObject("val", val);
 		Map map = new HashMap<>();
+		map.put("flag", flag);
 		map.put("mlist", mlist);
 		return map;
 	}
 
 	@GetMapping("/member/memberinfo")
-	public String memberinfo(String id, ModelMap map) {
-		UsersDto udto = uservice.getById(id);
-		MembersDto mdto = mservice.getByuserId(id);
-		
+	public Map memberinfo(String id) {
+		boolean flag = true;
+		UsersDto udto = new UsersDto();
+		MembersDto mdto = new MembersDto();
+
 		ArrayList<EduWorkExperienceInfoDto> elist = new ArrayList<EduWorkExperienceInfoDto>();
-		if (mservice.getByuserId(id) != null) {
-			elist = eservice.getByMembers(mservice.getByuserId(id).getMemberid());
-		}
 		ArrayList<EduWorkExperienceInfoDto> edulist = new ArrayList<EduWorkExperienceInfoDto>();
 		ArrayList<EduWorkExperienceInfoDto> expwoklist = new ArrayList<EduWorkExperienceInfoDto>();
-		for (EduWorkExperienceInfoDto edto : elist) {
-			if (edto.getType() == 0) {
-				edulist.add(edto);
-			} else {
-				expwoklist.add(edto);
+		try {
+			udto = uservice.getById(id);
+			mdto = mservice.getByuserId(id);
+			if (mservice.getByuserId(id) != null) {
+				elist = eservice.getByMembers(mservice.getByuserId(id).getMemberid());
 			}
+			for (EduWorkExperienceInfoDto edto : elist) {
+				if (edto.getType() == 0) {
+					edulist.add(edto);
+				} else {
+					expwoklist.add(edto);
+				}
+			}
+		} catch (Exception e) {
+			flag = false;
 		}
-		map.addAttribute("user", udto);
-		map.addAttribute("mdto", mdto);
-		map.addAttribute("edulist", edulist);
-		map.addAttribute("expwoklist", expwoklist); 
-		return "member/memberinfo";
+		Map map = new HashMap<>();
+		map.put("flag", flag);
+		map.put("user", udto);
+		map.put("mdto", mdto);
+		map.put("edulist", edulist);
+		map.put("expwoklist", expwoklist);
+		return map;
 	}
-	
+
 	@GetMapping("/member/memberchatinfo")
 	@ResponseBody
 	public Map<String, Object> memberchatinfo(@RequestParam("userId") String userId) {
-	    MembersDto mdto = mservice.getByuserId(userId);
-	    DeptsDto deptN = dservice.getByDeptId(mdto.getDeptid().getDeptid());
-	    JoblvsDto jobL = jservice.getByJoblvIdx(mdto.getJoblvid().getJoblvidx());
-	    Map<String, Object> memchatinfo = new HashMap<>();
-	    memchatinfo.put("deptN", deptN);
-	    memchatinfo.put("jobL", jobL);
-	    memchatinfo.put("member", mdto);
-	    return memchatinfo;
+		MembersDto mdto = mservice.getByuserId(userId);
+		DeptsDto deptN = dservice.getByDeptId(mdto.getDeptid().getDeptid());
+		JoblvsDto jobL = jservice.getByJoblvIdx(mdto.getJoblvid().getJoblvidx());
+		Map<String, Object> memchatinfo = new HashMap<>();
+		memchatinfo.put("deptN", deptN);
+		memchatinfo.put("jobL", jobL);
+		memchatinfo.put("member", mdto);
+		return memchatinfo;
 	}
 
 	@GetMapping("/member/memberimg")
@@ -173,55 +198,73 @@ public class MembersController {
 	}
 
 	@GetMapping("/member/memberedit")
-	public String membereditform(String id, ModelMap map) {
-		MembersDto mdto = mservice.getByuserId(id);
-		map.addAttribute("member", mdto);
-		map.addAttribute("userid", id);
-		ArrayList<DeptsDto> dlistAll = dservice.getAll();
+	public Map membereditform(String id) {
+		boolean flag = true;
+		MembersDto mdto = new MembersDto();
 		ArrayList<DeptsDto> dlist = new ArrayList<DeptsDto>();
-		for (DeptsDto ddto : dlistAll) {
-			if (ddto.getMgrid() != null && ddto.getMgrid().getMemberid() == mservice
-					.getByMemberId(ddto.getMgrid().getMemberid()).getMemberid()) {
-				mdto = mservice.getByMemberId(ddto.getMgrid().getMemberid());
-				ddto.setMgrid(new Members(mdto.getUserid(), mdto.getMemberid(), mdto.getBirthdt(), mdto.getEmail(),
-						mdto.getCpnum(), mdto.getAddress(), mdto.getMemberimgnm(), mdto.getHiredt(), mdto.getLeavedt(),
-						mdto.getDeptid(), mdto.getJoblvid(), mdto.getMgrid(), null));
-				dlist.add(ddto);
+		try {
+			mdto = mservice.getByuserId(id);
+			ArrayList<DeptsDto> dlistAll = dservice.getAll();
+			for (DeptsDto ddto : dlistAll) {
+				if (ddto.getMgrid() != null && ddto.getMgrid().getMemberid() == mservice
+						.getByMemberId(ddto.getMgrid().getMemberid()).getMemberid()) {
+					mdto = mservice.getByMemberId(ddto.getMgrid().getMemberid());
+					ddto.setMgrid(new Members(mdto.getUserid(), mdto.getMemberid(), mdto.getBirthdt(), mdto.getEmail(),
+							mdto.getCpnum(), mdto.getAddress(), mdto.getMemberimgnm(), mdto.getHiredt(),
+							mdto.getLeavedt(), mdto.getDeptid(), mdto.getJoblvid(), mdto.getMgrid(), null));
+					dlist.add(ddto);
+				}
 			}
+		} catch (Exception e) {
+			flag = false;
 		}
-		map.addAttribute("dlist", dlist);
-		map.addAttribute("jlist", jservice.getAll());
-		return "member/memberedit";
+		Map map = new HashMap<>();
+		map.put("flag", flag);
+		map.put("member", mdto);
+		map.put("userid", id);
+		map.put("dlist", dlist);
+		map.put("jlist", jservice.getAll());
+		return map;
 	}
 
 	@PostMapping("/member/memberadd")
-	public String memberadd(MembersDto dto, EduWorkExperienceInfoDto edto) {
-		MembersDto mdto = mservice.save(dto);
-		if (!dto.getMemberimgf().isEmpty()) {
-			String oname = dto.getMemberimgf().getOriginalFilename();
-			String f1 = oname.substring(oname.lastIndexOf("."));
-			String f2 = oname.substring(oname.lastIndexOf(".") + 1, oname.length());
-			String f3 = oname.substring(0, oname.lastIndexOf("."));
-			String fname = f3 + " (" + mdto.getUserid().getUsernm() + ")." + f2;
-			File newFile = new File(path + dirName + fname);
-			try {
-				dto.getMemberimgf().transferTo(newFile);
-				mdto.setMemberimgnm(newFile.getName());
+	public Map memberadd(MembersDto dto, EduWorkExperienceInfoDto edto) {
+		boolean flag = true;
+		MembersDto mdto = new MembersDto();
+		try {
+			mdto = mservice.save(dto);
+			if (!dto.getMemberimgf().isEmpty()) {
+				String oname = dto.getMemberimgf().getOriginalFilename();
+				String f1 = oname.substring(oname.lastIndexOf("."));
+				String f2 = oname.substring(oname.lastIndexOf(".") + 1, oname.length());
+				String f3 = oname.substring(0, oname.lastIndexOf("."));
+				String fname = f3 + " (" + mdto.getUserid().getUsernm() + ")." + f2;
+				File newFile = new File(path + dirName + fname);
+				try {
+					dto.getMemberimgf().transferTo(newFile);
+					mdto.setMemberimgnm(newFile.getName());
 //				System.out.println(mdto.getMemberimgnm());
-				mservice.save(mdto);
-			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+					mservice.save(mdto);
+				} catch (IllegalStateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("mdto.getMemberid():" + mdto.getMemberid());
+				EduWorkExperienceInfoDto eweidto = eservice.save(edto);
+				eweidto.setMemberid(new Members(null, mdto.getMemberid(), null, null, null, null, null, null, null,
+						null, null, null, null));
+				eservice.save(eweidto);
 			}
-			System.out.println("mdto.getMemberid():" + mdto.getMemberid());
-			EduWorkExperienceInfoDto eweidto = eservice.save(edto);
-			eweidto.setMemberid(new Members(null, mdto.getMemberid(), null, null, null, null, null, null, null, null, null, null, null));
-			eservice.save(eweidto);
+		} catch (Exception e) {
+			flag = false;
 		}
-		return "redirect:/member/memberinfo?id=" + dto.getUserid().getId();
+		Map map = new HashMap<>();
+		map.put("flag", flag);
+		map.put("id", dto.getUserid().getId());
+		return map;
 	}
 
 //	@PostMapping("/member/eweiadd")
@@ -232,14 +275,20 @@ public class MembersController {
 //		eservice.save(eweidto);
 //		return "redirect:/user/userinfo?id=" + edto.getMemberid().getUserid().getId();
 //	}
-	
+
 	//
 	@PostMapping("/admin/member/membertestadd")
-	public String membertestadd(String dummyuserid) {
-		mservice.dummyMembersave(dummyuserid);
-		return "redirect:/admin/user/userlist";
+	public Map membertestadd(String dummyuserid) {
+		boolean flag = true;
+		try {
+			mservice.dummyMembersave(dummyuserid);
+		} catch (Exception e) {
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+		return map;
 
 	}
-
 
 }
