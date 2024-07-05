@@ -245,7 +245,7 @@ src/main/resources/application.properties
 
 #
 src/main/java/com/example/demo/config/mariaDBConfig.java
-src/main/java/com/example/demo/config/oracleConfig.java
+src/main/java/com/example/demo/config/oracleDBConfig.java
 
 
 ### VisualStudioCode ###
