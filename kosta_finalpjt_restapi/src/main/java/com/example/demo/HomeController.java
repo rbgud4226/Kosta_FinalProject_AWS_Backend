@@ -4,15 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -173,13 +172,19 @@ public class HomeController {
 	@ResponseBody
 	@PostMapping("/login")
 	public Map login(String id, String pwd) {
+		System.out.println("login 컨트롤");
 		// 인증에 사용할 객체. username / password 를 비교하여 인증하는 클래스
 		UsernamePasswordAuthenticationToken upauthtoken = new UsernamePasswordAuthenticationToken(id, pwd);
+		System.out.println("upauthtoken:" + upauthtoken);
 		// authentication() 인증 메서드. 인증한 결과를 Authentication에 담아 반환>>인증하고 인증한 결과를 반환
 		Authentication auth = ambuilder.getObject().authenticate(upauthtoken);
-		// isAuthenticated(): 인증결과 반환(true/false)
+		System.out.println("auth:" + auth);
+		
+		// isAuthenticated(): 인증결과 반환(true/false)		
 		boolean flag = auth.isAuthenticated();
 		System.out.println("인증결과:" + flag);
+
+		String errorMessage = "";
 		Map map = new HashMap();
 		if (flag) {
 			// 인증 성공시 토큰 생성
@@ -192,8 +197,18 @@ public class HomeController {
 			System.out.println(token);
 			System.out.println(id);
 			System.out.println(type);
+			System.out.println("로그인");		
+		} else {
+			if(uservice.getById(id) == null) {
+				errorMessage = "계정을 찾을 수 없습니다.";
+			} else if(!uservice.getById(id).getOldpwd().equals(pwd)) {
+				errorMessage = "잘못된 비밀번호입니다.";
+			}
+			map.put("id", id);
+			map.put("pwd", pwd);
+			System.out.println("로그인 실패");
 		}
-		System.out.println("로그인");
+		map.put("errorMessage", errorMessage);
 		map.put("flag", flag);
 		return map;
 	}
