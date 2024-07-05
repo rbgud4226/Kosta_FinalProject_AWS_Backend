@@ -241,9 +241,11 @@ buildNumber.properties
 .classpath
 #
 src/main/resources/application.properties
+src/main/java/com/example/demo/config/*
 
 # except application.properties
 src/main/resources/application.properties
+src/main/java/config/**
 
 ### VisualStudioCode ###
 .vscode/*
