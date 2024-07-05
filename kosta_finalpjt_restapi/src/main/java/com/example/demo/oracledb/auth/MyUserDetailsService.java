@@ -22,6 +22,10 @@ public class MyUserDetailsService implements UserDetailsService {
 
 		System.out.println("security service: " + u);
 		return new MyUserDetails(u);
+//		Users u = dao.findById(id).orElseThrow(() -> new UsernameNotFoundException("not found id:" + id));
+//
+//		System.out.println("security service: " + u);
+//		return new MyUserDetails(u);
 	}
 
 }
