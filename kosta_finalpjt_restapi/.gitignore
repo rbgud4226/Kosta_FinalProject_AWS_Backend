@@ -242,12 +242,11 @@ buildNumber.properties
 
 # except application.properties
 src/main/resources/application.properties
-src/main/java/config/**
 
 #
 src/main/java/com/example/demo/config/mariaDBConfig.java
-src/main/java/com/example/demo/config/oracleDBConfig.java
-src/main/java/com/**
+src/main/java/com/example/demo/config/oracleConfig.java
+
 
 ### VisualStudioCode ###
 .vscode/*
