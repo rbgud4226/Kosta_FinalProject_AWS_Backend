@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.catalina.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -186,7 +187,7 @@ public class UsersService {
 	public void delMember(String id) {
 		dao.deleteById(id);
 	}
-
+	
 	// 회원가입 유효성 검사
 	@Transactional(readOnly = true)
 	public Map<String, String> validateHandling(Errors errors) {
