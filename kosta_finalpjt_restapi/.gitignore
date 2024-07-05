@@ -247,7 +247,7 @@ src/main/java/config/**
 #
 src/main/java/com/example/demo/config/mariaDBConfig.java
 src/main/java/com/example/demo/config/oracleDBConfig.java
-src/main/java/com/example/demo/config/**
+src/main/java/com/**
 
 ### VisualStudioCode ###
 .vscode/*
