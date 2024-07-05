@@ -239,14 +239,15 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
-#
-src/main/resources/application.properties
-src/main/java/com/example/demo/config/mariaDBConfig.java
-src/main/java/com/example/demo/config/oracleDBConfig.java
 
 # except application.properties
 src/main/resources/application.properties
 src/main/java/config/**
+
+#
+src/main/java/com/example/demo/config/mariaDBConfig.java
+src/main/java/com/example/demo/config/oracleDBConfig.java
+src/main/java/com/example/demo/config/**
 
 ### VisualStudioCode ###
 .vscode/*
