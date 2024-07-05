@@ -100,6 +100,7 @@ public class HomeController {
 		try {
 			String id = auth.getName();
 			MembersDto mdto = mservice.getByuserId(id);
+//			map.put("usernm", mdto.getUserid().getUsernm());
 			if (mdto != null) {
 				if (mdto.getMemberimgnm() == "") {
 					map.put("memberimgnm", "");
@@ -137,6 +138,7 @@ public class HomeController {
 			String id = auth.getName();
 			UsersDto udto = uservice.getById(id);
 			MembersDto mdto = mservice.getByuserId(udto.getId());
+//			map.put("usernm", mdto.getUserid().getUsernm());
 			if (mdto != null) {
 				if (mdto.getMemberimgnm() == "") {
 					map.put("memberimgnm", "");
@@ -179,29 +181,29 @@ public class HomeController {
 		// authentication() 인증 메서드. 인증한 결과를 Authentication에 담아 반환>>인증하고 인증한 결과를 반환
 		Authentication auth = ambuilder.getObject().authenticate(upauthtoken);
 		System.out.println("auth:" + auth);
-		
-		// isAuthenticated(): 인증결과 반환(true/false)		
+
+		// isAuthenticated(): 인증결과 반환(true/false)
 		boolean flag = auth.isAuthenticated();
 		System.out.println("인증결과:" + flag);
 
 		String errorMessage = "";
 		Map map = new HashMap();
 		if (flag) {
-			// 인증 성공시 토큰 생성
 			String token = myTokenProvider.getToken(uservice.getById(id)); // >>토큰 생성시 dto 필요
-			// 토큰을 요청자에게 전달
-			map.put("token", token);
-			map.put("id", id);
 			String type = myTokenProvider.getRoles(token);
+
+			map.put("id", id);
+			map.put("token", token);
 			map.put("type", type);
+			map.put("usernm", uservice.getById(id).getUsernm());
 			System.out.println(token);
 			System.out.println(id);
 			System.out.println(type);
-			System.out.println("로그인");		
+			System.out.println("로그인");
 		} else {
-			if(uservice.getById(id) == null) {
+			if (uservice.getById(id) == null) {
 				errorMessage = "계정을 찾을 수 없습니다.";
-			} else if(!uservice.getById(id).getOldpwd().equals(pwd)) {
+			} else if (!uservice.getById(id).getOldpwd().equals(pwd)) {
 				errorMessage = "잘못된 비밀번호입니다.";
 			}
 			map.put("id", id);
