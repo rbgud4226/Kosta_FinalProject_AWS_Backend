@@ -241,7 +241,8 @@ buildNumber.properties
 .classpath
 #
 src/main/resources/application.properties
-src/main/java/com/example/demo/config/*
+src/main/java/com/example/demo/config/mariaDBConfig.java
+src/main/java/com/example/demo/config/oracleDBConfig.java
 
 # except application.properties
 src/main/resources/application.properties
