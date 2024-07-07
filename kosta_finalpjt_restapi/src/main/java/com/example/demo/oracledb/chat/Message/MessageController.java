@@ -64,6 +64,11 @@ public class MessageController {
 	public Map getMessages(@PathVariable String roomid) {
 		Map map = new HashMap();
 		ArrayList<MessageDto> list = messageService.getMessageByRoomId(roomid);
+		if(list.isEmpty()) {
+			ArrayList<MessageDto> l = new ArrayList<>();
+			map.put("list", l);
+			return map;
+		}
 		map.put("list", list);
 		return map;
 	}
@@ -71,7 +76,8 @@ public class MessageController {
 	//파일 업로드
 	@PostMapping("/chat/message/upload")
 	@ResponseBody
-	public Map FileUpload(@RequestParam("file") MultipartFile file) {
+	public Map<String, Object> FileUpload(@RequestParam("file") MultipartFile file) {
+		System.out.println("요청오는지 테스트");
 		return messageService.FileuploadMethod(file);
 	}
 }

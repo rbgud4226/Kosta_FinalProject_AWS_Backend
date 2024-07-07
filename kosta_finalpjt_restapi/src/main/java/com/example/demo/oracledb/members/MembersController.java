@@ -16,13 +16,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.oracledb.depts.DeptsDto;
 import com.example.demo.oracledb.depts.DeptsService;
@@ -32,7 +36,8 @@ import com.example.demo.oracledb.users.Users;
 import com.example.demo.oracledb.users.UsersDto;
 import com.example.demo.oracledb.users.UsersService;
 
-@Controller
+@RestController
+@CrossOrigin(origins = "*")
 public class MembersController {
 
 	@Autowired
@@ -157,18 +162,22 @@ public class MembersController {
 		return map;
 	}
 
-	@GetMapping("/member/memberchatinfo")
+	@PostMapping("/member/memberchatinfo")
 	@ResponseBody
-	public Map<String, Object> memberchatinfo(@RequestParam("userId") String userId) {
-		MembersDto mdto = mservice.getByuserId(userId);
-		DeptsDto deptN = dservice.getByDeptId(mdto.getDeptid().getDeptid());
+	public Map<String, Object> memberchatinfo(@RequestParam(name ="userid") String userid) {
+		System.out.println("요청 들어오나요 ???");
+		MembersDto mdto = mservice.getByuserId(userid);
+		Users username = uservice.getById2(userid);
+//		DeptsDto deptN = dservice.getByDeptId(mdto.getDeptid().getDeptid());
 		JoblvsDto jobL = jservice.getByJoblvIdx(mdto.getJoblvid().getJoblvidx());
 		Map<String, Object> memchatinfo = new HashMap<>();
-		memchatinfo.put("deptN", deptN);
+//		memchatinfo.put("deptN", deptN);
 		memchatinfo.put("jobL", jobL);
 		memchatinfo.put("member", mdto);
+		memchatinfo.put("membername", username.getUsernm());
 		return memchatinfo;
 	}
+
 
 	@GetMapping("/member/memberimg")
 	public ResponseEntity<byte[]> read_img(String memberimgnm) {

@@ -79,11 +79,12 @@ public class ChatRoomController {
 	// 채팅방 나가기(채팅방 번호, 나가는사람 id)
 	@PostMapping("/chat/chatrooms/out")
 	@ResponseBody
-	public Map getOutRoom(String chatroomid, String userid) {
+	public Map getOutRoom(@RequestParam String roomid) {
+		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		Map map = new HashMap();
 		boolean flag = false;
 		try {
-			chatRoomService.getoutChatRoomMethod(chatroomid, userid);
+			chatRoomService.getoutChatRoomMethod(roomid, loginId);
 			flag = true;
 		} catch (IOException e) {
 			flag = false;

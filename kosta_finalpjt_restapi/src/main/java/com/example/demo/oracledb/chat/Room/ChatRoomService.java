@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -70,13 +71,13 @@ public class ChatRoomService {
 			}
 			return new ChatRoomDto(chatRoom.getChatroomid(), chatRoom.getName(), chatRoom.getChatRoomNames(),
 					chatRoom.getRoomType(), chatRoom.getChats(), chatRoom.getRoomUsers(), chatRoom.isStatus(), null,
-					null, null);
+					null, null, null);
 		} else {
 			chatRoom = createNewChatRoom(userIds, name);
 		}
 		return new ChatRoomDto(chatRoom.getChatroomid(), chatRoom.getName(), chatRoom.getChatRoomNames(),
 				chatRoom.getRoomType(), chatRoom.getChats(), chatRoom.getRoomUsers(), chatRoom.isStatus(), null, null,
-				null);
+				null,null);
 	}
 
 	private ChatRoom createNewChatRoom(List<String> userIds, String name) {
@@ -152,7 +153,7 @@ public class ChatRoomService {
 		for (ChatRoom cr : l) {
 			if (cr.getParticipants().contains(partN) && cr.getParticipants().contains(name) && cr.isStatus()) {
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
-						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), null));
+						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), null,null));
 			}
 		}
 		return list;
@@ -185,7 +186,7 @@ public class ChatRoomService {
 			}
 			if (cr.isStatus() && cr.getName().contains(loginId)) {
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
-						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), imgL));
+						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), imgL,null));
 			}
 		}
 		return list;
@@ -206,12 +207,12 @@ public class ChatRoomService {
 				}
 			}
 			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
-					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL);
+					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL,null);
 			return cr;
 		} else {
 			imgL = "";
 			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
-					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL);
+					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL,null);
 			return cr;
 		}
 	}
@@ -396,6 +397,13 @@ public class ChatRoomService {
 	        }
 	    }
 	    cr.setChatRoomNames(roomNames);
+	    
+	    String[] nameParts = cr.getName().split("_");
+	    List<String> memberNames = Arrays.stream(nameParts)
+	                                     .filter(name -> !name.equals(cr.getChatRoomNames().get(0).getHost()))
+	                                     .map(name -> usersService.getById(name).getUsernm())
+	                                     .collect(Collectors.toList());
+	    cr.setMemberNames(memberNames);
 	    return cr;
 	}
 	

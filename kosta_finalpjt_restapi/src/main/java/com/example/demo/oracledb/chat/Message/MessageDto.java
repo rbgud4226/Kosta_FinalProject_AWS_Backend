@@ -24,6 +24,7 @@ public class MessageDto {
 	private String fileId;
 	private String fileRoot;
 	private String partid;
+	private String username;
 
 	public MessageDto(Long id, ChatRoom room, Timestamp sendDate, String sender, String type, String partid) {
 		super();
