@@ -30,4 +30,5 @@ public class ChatRoomDto {
 	private String recentMsg;
 	private String participants;
 	private String img;
+	private List<String> memberNames;
 }

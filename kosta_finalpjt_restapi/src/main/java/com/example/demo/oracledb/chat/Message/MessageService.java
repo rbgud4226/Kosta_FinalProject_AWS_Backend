@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.oracledb.chat.Room.ChatRoom;
 import com.example.demo.oracledb.chat.Room.ChatRoomDao;
 import com.example.demo.oracledb.chat.Room.ChatRoomService;
+import com.example.demo.oracledb.members.MembersService;
 import com.example.demo.oracledb.users.UsersService;
 
 @Service
@@ -41,7 +42,7 @@ public class MessageService {
 		        throw new NullPointerException("없는방 " + roomId);
 		    }
 		Message ms = new Message(message.getId(), chatroom, message.getContent(), message.getSendDate(), message.getSender(), message.getType(), message.getFileName(), message.getFileId(), message.getFileRoot(), message.getPartid());
-		String mess = ms.getContent().replaceAll("(?:\r\n|\r|\n)", "<br>");
+		String mess = ms.getContent().replaceAll("(?:\r\n|\r|\n)", "<br/>");
 		ms.setContent(mess);
 		return messagedao.save(ms);
 	}
@@ -51,7 +52,8 @@ public class MessageService {
 		List<Message> l = messagedao.findByRoom_ChatroomidOrderByIdAsc(roomId);
 		ArrayList<MessageDto> list = new ArrayList<>();
 		for(Message m : l) {
-			list.add(new MessageDto(m.getId(),m.getRoom(),m.getContent(), m.getSendDate(), m.getSender(), m.getType(), m.getFileName(), m.getFileId(),m.getFileRoot(),m.getPartid()));
+			String username = usersService.getById2(m.getSender()).getUsernm();
+			list.add(new MessageDto(m.getId(),m.getRoom(),m.getContent(), m.getSendDate(), m.getSender(), m.getType(), m.getFileName(), m.getFileId(),m.getFileRoot(),m.getPartid(), username));
 		}
 		return list;
 	}
@@ -77,7 +79,6 @@ public class MessageService {
 		String partN = usersService.getById2(chatMessage.getSender()).getUsernm();
 		chatMessage.setContent(osg);
 		chatMessage.setPartid(partN);
-		chatMessage.setSendDate(chatRoomService.createSendDate());
 	}
 	
 	public void fileTypeMessage(MessageDto chatMessage, String roomId) {
@@ -87,13 +88,13 @@ public class MessageService {
         chatMessage.setContent("FILE");
 	}
 	
-	public Map<String, String> FileuploadMethod(MultipartFile file){
+	public Map<String, Object> FileuploadMethod(MultipartFile file){
 		try {
 			String originalFilename = file.getOriginalFilename();
 			String fileRoot = path + "/" + originalFilename;
 			File newFile = new File(fileRoot);
 			file.transferTo(newFile);
-			Map<String, String> response = new HashMap<>();
+			Map<String, Object> response = new HashMap<>();
 			String wpath = "http://localhost:8081/files/" + originalFilename;
 			response.put("fileName", originalFilename);
 			response.put("fileRoot", wpath);
