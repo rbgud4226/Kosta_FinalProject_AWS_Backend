@@ -74,8 +74,8 @@ public class oracleDBConfig {
   public DataSource oracleDataSource(){
     return DataSourceBuilder.create()
         .driverClassName("oracle.jdbc.driver.OracleDriver")
-//        .url("jdbc:oracle:thin:@192.168.0.36:1521/xe")
-        .url("jdbc:oracle:thin:@localhost:1521/xe")
+        .url("jdbc:oracle:thin:@192.168.0.36:1521/xe")
+//        .url("jdbc:oracle:thin:@localhost:1521/xe")
         .username("hr")
         .password("hr")
         .build();
