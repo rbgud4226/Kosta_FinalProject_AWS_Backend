@@ -79,12 +79,12 @@ public class ChatRoomController {
 	// 채팅방 나가기(채팅방 번호, 나가는사람 id)
 	@PostMapping("/chat/chatrooms/out")
 	@ResponseBody
-	public Map getOutRoom(@RequestParam String roomid) {
+	public Map getOutRoom(@RequestParam String roomid, @RequestParam int page) {
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		Map map = new HashMap();
 		boolean flag = false;
 		try {
-			chatRoomService.getoutChatRoomMethod(roomid, loginId);
+			chatRoomService.getoutChatRoomMethod(roomid, loginId, page);
 			flag = true;
 		} catch (IOException e) {
 			flag = false;
@@ -96,13 +96,13 @@ public class ChatRoomController {
 	// 채팅방 초대하기(채팅방 번호, 초대할 유저 id 리스트, 로그인한 id)
 	@PostMapping("/chat/chatrooms/invite")
 	@ResponseBody
-	public Map inviteChatRoom(@RequestParam(name = "userid") List<String> userids, String chatroomid) {
+	public Map inviteChatRoom(@RequestParam(name = "userid") List<String> userids, String chatroomid, @RequestParam int page) {
 		System.out.println("요청은 오냐?");
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		Map map = new HashMap();
 		boolean flag = false;
 		try {
-			chatRoomService.inviteChatRoomMethod(userids, chatroomid, loginId);
+			chatRoomService.inviteChatRoomMethod(userids, chatroomid, loginId, page);
 			flag = true;
 		} catch (IOException e) {
 			flag = false;
