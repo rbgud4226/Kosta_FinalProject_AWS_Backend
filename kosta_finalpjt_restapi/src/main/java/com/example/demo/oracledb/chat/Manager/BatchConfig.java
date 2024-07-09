@@ -76,18 +76,21 @@ public class BatchConfig extends DefaultBatchConfiguration {
         return dataSource;
     }
 
+
     @Bean
-    public Job chatManageJob(Step chatStep, PlatformTransactionManager transactionManager) {
-        return new JobBuilder("chatJob", jobRepository).start(chatStep(jobRepository, transactionManager)).build();
+    public Job chatManageJob(Step chatStep) {
+        return new JobBuilder("chatJob", jobRepository).start(chatStep).build();
     }
 
     @Bean
-    public Step chatStep(JobRepository jobRepository2, PlatformTransactionManager transactionManager) {
-        return new StepBuilder("chatStep", jobRepository).tasklet((contribution, chunkContext) -> {
-            deleteOldMessages();
-            deleNotUseRoom();
-            return RepeatStatus.FINISHED;
-        }, transactionManager).build();
+    public Step chatStep() {
+        return new StepBuilder("chatStep", jobRepository)
+                .tasklet((contribution, chunkContext) -> {
+                    deleteOldMessages();
+                    deleteNotUseRoom();
+                    return RepeatStatus.FINISHED;
+                }, transactionManager())
+                .build();
     }
 
     @Transactional
@@ -97,7 +100,7 @@ public class BatchConfig extends DefaultBatchConfiguration {
     }
     
     @Transactional
-    private void deleNotUseRoom() {
+    private void deleteNotUseRoom() {
         List<ChatRoom> list = chatRoomService.getChatRoomByStatusF();
         for (ChatRoom c : list) {
             try {
@@ -109,23 +112,24 @@ public class BatchConfig extends DefaultBatchConfiguration {
         chatRoomService.delChatRoomBychatroomid();
     }
     
-    //spring.batch.jdbc.initialize-schema=always 용도
+    //spring.batch.jdbc.initialize-schema=always 용
     @Bean
     public DataSourceInitializer dataSourceInitializer(DataSource dataSource) {
-      DataSourceInitializer initializer = new DataSourceInitializer();
-      initializer.setDataSource(dataSource);
-      ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-      populator.addScript(new ClassPathResource("org/springframework/batch/core/schema-oracle.sql"));
-      initializer.setDatabasePopulator(populator);
-      try (Connection connection = dataSource.getConnection();
-           Statement statement = connection.createStatement()) {
-          statement.execute("SELECT 1 FROM BATCH_JOB_INSTANCE WHERE 1=0");
-          initializer.setEnabled(false);
-      } catch (SQLException e) {
-          initializer.setEnabled(true);
-      }
+        DataSourceInitializer initializer = new DataSourceInitializer();
+        initializer.setDataSource(dataSource);
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+        populator.addScript(new ClassPathResource("org/springframework/batch/core/schema-oracle.sql"));
+        initializer.setDatabasePopulator(populator);
 
-      return initializer;
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("SELECT 1 FROM BATCH_JOB_INSTANCE WHERE 1=0");
+            initializer.setEnabled(false);
+        } catch (SQLException e) {
+            initializer.setEnabled(true);
+        }
+
+        return initializer;
     }
     
     @Configuration
