@@ -1,13 +1,14 @@
 package com.example.demo.oracledb.chat.Room;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -70,13 +71,13 @@ public class ChatRoomService {
 			}
 			return new ChatRoomDto(chatRoom.getChatroomid(), chatRoom.getName(), chatRoom.getChatRoomNames(),
 					chatRoom.getRoomType(), chatRoom.getChats(), chatRoom.getRoomUsers(), chatRoom.isStatus(), null,
-					null, null);
+					null, null, null);
 		} else {
 			chatRoom = createNewChatRoom(userIds, name);
 		}
 		return new ChatRoomDto(chatRoom.getChatroomid(), chatRoom.getName(), chatRoom.getChatRoomNames(),
 				chatRoom.getRoomType(), chatRoom.getChats(), chatRoom.getRoomUsers(), chatRoom.isStatus(), null, null,
-				null);
+				null,null);
 	}
 
 	private ChatRoom createNewChatRoom(List<String> userIds, String name) {
@@ -152,7 +153,7 @@ public class ChatRoomService {
 		for (ChatRoom cr : l) {
 			if (cr.getParticipants().contains(partN) && cr.getParticipants().contains(name) && cr.isStatus()) {
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
-						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), null));
+						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), null,null));
 			}
 		}
 		return list;
@@ -185,7 +186,7 @@ public class ChatRoomService {
 			}
 			if (cr.isStatus() && cr.getName().contains(loginId)) {
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
-						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), imgL));
+						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), imgL,null));
 			}
 		}
 		return list;
@@ -200,26 +201,24 @@ public class ChatRoomService {
 				nameL.add(l);
 			}
 			for (String l : nameL) {
-				if (l.equals(userId1)) {
-					String userid = usersService.getById2(userId1).getId();
+				if (!l.equals(userId1)) {
+					String userid = usersService.getById2(l).getId();
 					imgL = memberService.getByuserId(userid).getMemberimgnm();
 				}
-				String userid = usersService.getById2(l).getId();
-				imgL = memberService.getByuserId(userid).getMemberimgnm();
 			}
 			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
-					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL);
+					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL,null);
 			return cr;
 		} else {
 			imgL = "";
 			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
-					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL);
+					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL,null);
 			return cr;
 		}
 	}
 	
 	@Transactional
-	public void editChatRoomName(String chatroomid, String newRoomName, String userId1) {
+	public void editChatRoomName(String chatroomid, String newRoomName, String loginId) {
 		ChatRoom chatRoom = chatRoomDao.findByChatroomid(chatroomid);
 		if (chatRoom == null) {
 			throw new NullPointerException("채팅방이 존재하지 않습니다.");
@@ -227,7 +226,7 @@ public class ChatRoomService {
 		List<ChatRoomName> roomNames = chatRoom.getChatRoomNames();
 
 		for (ChatRoomName crn : roomNames) {
-			if (crn.getHost().equals(userId1)) {
+			if (crn.getHost().equals(loginId)) {
 				if (newRoomName == null || newRoomName.trim().isEmpty()) {
 					crn.setEditableName("채팅방 이름 없음");
 				} else {
@@ -301,7 +300,9 @@ public class ChatRoomService {
 	    inviteMessage.setContent(inviteContent);
 	    inviteMessage.setPartid(usersService.getById2(loginId).getUsernm());
 	    inviteMessage.setSender(loginId);
-	    inviteMessage.setSendDate(createSendDate());
+	    LocalDateTime seoulDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+	    Timestamp timestamp = Timestamp.valueOf(seoulDateTime);
+	    inviteMessage.setSendDate(timestamp);
 	    return inviteMessage;
 	}
 	
@@ -311,7 +312,9 @@ public class ChatRoomService {
 	    getOutMessage.setContent(outContent);
 	    getOutMessage.setPartid(usersService.getById2(userId).getUsernm());
 	    getOutMessage.setSender(userId);
-	    getOutMessage.setSendDate(createSendDate());
+	    LocalDateTime seoulDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+	    Timestamp timestamp = Timestamp.valueOf(seoulDateTime);
+	    getOutMessage.setSendDate(timestamp);
 	    return getOutMessage;
 	}
 
@@ -324,15 +327,6 @@ public class ChatRoomService {
 		return String.join("_", partName);
 	}
 	
-	public String createSendDate() {
-		LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MMMM dd일", Locale.KOREAN);
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.KOREAN);
-        String sendDay = now.format(dateFormatter);
-        String sendTime = now.format(timeFormatter);
-        return sendDay + " " + sendTime;
-	}
-	
 	public List<ChatRoom> getChatRoomByStatusF(){
 		return chatRoomDao.findByStatus(false);
 	}
@@ -343,17 +337,16 @@ public class ChatRoomService {
 	}
 	
 	//controller createChatRoom
-	public ModelMap createChatRoomByUserList(List<String> userid, HttpSession session) {
-		ModelMap   map = new ModelMap();
-		String userId1 = (String) session.getAttribute("loginId");
-		if (!userid.contains(userId1)) {
-			userid.add(userId1);
+	public ModelMap createChatRoomByUserList(List<String> userid, String loginId) {
+		if (!userid.contains(loginId)) {
+			userid.add(loginId);
 		}
 		ChatRoomDto chatRoomDto = createChatRoom(userid);
-		String partId = usersService.getById2(userId1).getUsernm();
+		String partId = usersService.getById2(loginId).getUsernm();
+		ModelMap   map = new ModelMap();
 		map.addAttribute("partId", partId);
 		map.addAttribute("roomId", chatRoomDto.getChatroomid());
-		map.addAttribute("userId1", userId1);
+		map.addAttribute("userId1", loginId);
 		return map;
 	}
 	
@@ -376,9 +369,8 @@ public class ChatRoomService {
 	}
 	
 	//controller getChatRoomsSearch
-	public ArrayList<ChatRoomDto> chatRoomsSearch(String userid, HttpSession session){
-		String loginId = (String) session.getAttribute("loginId");
-		ArrayList<ChatRoomDto> cr = getChatRoomsListByName(userid, loginId);
+	public ArrayList<ChatRoomDto> chatRoomsSearch(String userName, String loginId){
+		ArrayList<ChatRoomDto> cr = getChatRoomsListByName(userName, loginId);
 		for (ChatRoomDto chatRoom : cr) {
 			String recentMsg = messageService.getRecentMessageByRoomId(chatRoom.getChatroomid());
 			ArrayList<ChatRoomNameDto> roomNamesDto = chatRoomNameService.getChatRoomNames(chatRoom.getChatroomid());
@@ -395,16 +387,23 @@ public class ChatRoomService {
 	}
 	
 	//controller getChatRoomsConnect
-	public ChatRoomDto chatRoomsConnect(String chatroomid, String userId1) {
-		ChatRoomDto cr = getChatRoomsByChatRoomId(chatroomid, userId1);
+	public ChatRoomDto chatRoomsConnect(String chatroomid, String userid) {
+		ChatRoomDto cr = getChatRoomsByChatRoomId(chatroomid, userid);
 	    ArrayList<ChatRoomNameDto> roomNamesDto = chatRoomNameService.getChatRoomNames(cr.getChatroomid());
 	    List<ChatRoomName> roomNames = new ArrayList<>();
 	    for (ChatRoomNameDto dto : roomNamesDto) {
-	        if (dto.getHost().equals(userId1)) {
+	        if (dto.getHost().equals(userid)) {
 	            roomNames.add(new ChatRoomName(dto.getId(), dto.getRoom(), dto.getHost(), dto.getRoomName(), dto.getEditableName()));
 	        }
 	    }
 	    cr.setChatRoomNames(roomNames);
+	    
+	    String[] nameParts = cr.getName().split("_");
+	    List<String> memberNames = Arrays.stream(nameParts)
+	                                     .filter(name -> !name.equals(cr.getChatRoomNames().get(0).getHost()))
+	                                     .map(name -> usersService.getById(name).getUsernm())
+	                                     .collect(Collectors.toList());
+	    cr.setMemberNames(memberNames);
 	    return cr;
 	}
 	
@@ -417,21 +416,20 @@ public class ChatRoomService {
 	}
 	
 	//controller getOutRoom
-	public void getoutChatRoomMethod(String roomId, String userId) {
-		String mes = getOutChatRoom(roomId, userId);
-		MessageDto getOutMessage = getOutMessage(roomId, userId, mes);
+	public void getoutChatRoomMethod(String roomId, String userid) {
+		String mes = getOutChatRoom(roomId, userid);
+		MessageDto getOutMessage = getOutMessage(roomId, userid, mes);
 		messageController.sendMessage(getOutMessage, roomId);
 	}
 	
 	//controller getChatRoomsByUserId
-	public ModelMap  chatroomsByUserId(String userid, HttpSession session) {
+	public ModelMap  chatroomsByUserId(String userid, String loginId) {
 		ModelMap map = new ModelMap();
-		String userId1 = (String) session.getAttribute("loginId");
-		ArrayList<ChatRoomDto> cr = getChatRoomsListByName(userid, userId1);
-		String partId = usersService.getById2(userId1).getUsernm();
+		ArrayList<ChatRoomDto> cr = getChatRoomsListByName(userid, loginId);
+		String partId = usersService.getById2(loginId).getUsernm();
 		map.addAttribute("partId", partId);
 		map.addAttribute("chatRooms", cr);
-		map.addAttribute("userId1", userId1);
+		map.addAttribute("userId1", loginId);
 		return map;
 	}
 	
