@@ -1,4 +1,5 @@
 package com.example.demo.oracledb.chat.Message;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,52 +20,53 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.constraints.Positive;
+
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/auth")
 public class MessageController {
 	@Autowired
 	private MessageService messageService;
-	
+
 	@Autowired
-    private SimpMessagingTemplate messagingTemplate;
+	private SimpMessagingTemplate messagingTemplate;
 
 	@Value("${spring.servlet.multipart.location}")
 	private String path;
-	
-	@MessageMapping("/chat/message/{roomId}")
-	public void sendMessage(@Payload MessageDto chatMessage, @DestinationVariable String roomId) {
-		if(chatMessage.getType().equals("OUT")) {
+
+	@MessageMapping("/chat/message/{roomId}/{page}")
+	public void sendMessage(@Payload MessageDto chatMessage, @DestinationVariable String roomId, @DestinationVariable int page) {
+		if (chatMessage.getType().equals("OUT")) {
 			messageService.save(chatMessage, roomId);
-			ArrayList<MessageDto> list = messageService.getMessageByRoomId(roomId);
-	        messagingTemplate.convertAndSend("/room/" + roomId, list);
-	        messagingTemplate.convertAndSend("/recent/update", roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1 ,roomId);
+			messagingTemplate.convertAndSend("/room/" + roomId, list);
+			messagingTemplate.convertAndSend("/recent/update", roomId);
 		} else if (chatMessage.getType().equals("FILE")) {
 			messageService.fileTypeMessage(chatMessage, roomId);
-	        messageService.save(chatMessage, roomId);
-	        ArrayList<MessageDto> list = messageService.getMessageByRoomId(roomId);
-	        messagingTemplate.convertAndSend("/room/" + roomId, list);
-	        messagingTemplate.convertAndSend("/recent/update", roomId);
-	    } else if (chatMessage.getType().equals("INVITE")) {
-	        messageService.save(chatMessage, roomId);
-	        ArrayList<MessageDto> list = messageService.getMessageByRoomId(roomId);
-	        messagingTemplate.convertAndSend("/room/" + roomId, list);
-	        messagingTemplate.convertAndSend("/recent/update", roomId);
-	    } else {
-	        messageService.save(chatMessage, roomId);
-	        ArrayList<MessageDto> list = messageService.getMessageByRoomId(roomId);
-	        messagingTemplate.convertAndSend("/room/" + roomId, list);
-	        messagingTemplate.convertAndSend("/recent/update", roomId);
-	    }
+			messageService.save(chatMessage, roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1, roomId);
+			messagingTemplate.convertAndSend("/room/" + roomId, list);
+			messagingTemplate.convertAndSend("/recent/update", roomId);
+		} else if (chatMessage.getType().equals("INVITE")) {
+			messageService.save(chatMessage, roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1, roomId);
+			messagingTemplate.convertAndSend("/room/" + roomId, list);
+			messagingTemplate.convertAndSend("/recent/update", roomId);
+		} else {
+			messageService.save(chatMessage, roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1,roomId);
+			messagingTemplate.convertAndSend("/room/" + roomId, list);
+			messagingTemplate.convertAndSend("/recent/update", roomId);
+		}
 	}
-	
-	//채팅방 메세지 호출
-	@GetMapping("/chat/message/room/{roomid}")
+
+	@PostMapping("/chat/message/room2")
 	@ResponseBody
-	public Map getMessages(@PathVariable String roomid) {
+	public Map getMessages(@RequestParam String roomid, @Positive @RequestParam int page) {
 		Map map = new HashMap();
-		ArrayList<MessageDto> list = messageService.getMessageByRoomId(roomid);
-		if(list.isEmpty()) {
+		ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page -1,roomid);
+		if (list.isEmpty()) {
 			ArrayList<MessageDto> l = new ArrayList<>();
 			map.put("list", l);
 			return map;
@@ -72,8 +74,7 @@ public class MessageController {
 		map.put("list", list);
 		return map;
 	}
-	
-	//파일 업로드
+
 	@PostMapping("/chat/message/upload")
 	@ResponseBody
 	public Map<String, Object> FileUpload(@RequestParam("file") MultipartFile file) {

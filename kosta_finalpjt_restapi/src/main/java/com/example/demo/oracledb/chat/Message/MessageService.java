@@ -1,5 +1,7 @@
 package com.example.demo.oracledb.chat.Message;
+
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,13 +11,15 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.oracledb.chat.Room.ChatRoom;
 import com.example.demo.oracledb.chat.Room.ChatRoomDao;
 import com.example.demo.oracledb.chat.Room.ChatRoomService;
-import com.example.demo.oracledb.members.MembersService;
 import com.example.demo.oracledb.users.UsersService;
 
 @Service
@@ -29,7 +33,7 @@ public class MessageService {
 	@Autowired
 	@Lazy
 	private ChatRoomService chatRoomService;
-	
+
 	@Autowired
 	private UsersService usersService;
 
@@ -38,57 +42,78 @@ public class MessageService {
 
 	public Message save(MessageDto message, String roomId) {
 		ChatRoom chatroom = chatroomdao.findByChatroomid(roomId);
-		  if (chatroom == null) {
-		        throw new NullPointerException("없는방 " + roomId);
-		    }
-		Message ms = new Message(message.getId(), chatroom, message.getContent(), message.getSendDate(), message.getSender(), message.getType(), message.getFileName(), message.getFileId(), message.getFileRoot(), message.getPartid());
+		if (chatroom == null) {
+			throw new NullPointerException("없는방 " + roomId);
+		}
+		Message ms = new Message(message.getId(), chatroom, message.getContent(), message.getSendDate(),
+				message.getSender(), message.getType(), message.getFileName(), message.getFileId(),
+				message.getFileRoot(), message.getPartid());
 		String mess = ms.getContent().replaceAll("(?:\r\n|\r|\n)", "<br/>");
 		ms.setContent(mess);
 		return messagedao.save(ms);
 	}
-	
-	
-	public ArrayList<MessageDto> getMessageByRoomId(String roomId){
+
+	public ArrayList<MessageDto> getMessageByRoomId(String roomId) {
 		List<Message> l = messagedao.findByRoom_ChatroomidOrderByIdAsc(roomId);
 		ArrayList<MessageDto> list = new ArrayList<>();
-		for(Message m : l) {
+		for (Message m : l) {
 			String username = usersService.getById2(m.getSender()).getUsernm();
-			list.add(new MessageDto(m.getId(),m.getRoom(),m.getContent(), m.getSendDate(), m.getSender(), m.getType(), m.getFileName(), m.getFileId(),m.getFileRoot(),m.getPartid(), username));
+			list.add(new MessageDto(m.getId(), m.getRoom(), m.getContent(), m.getSendDate(), m.getSender(), m.getType(),
+					m.getFileName(), m.getFileId(), m.getFileRoot(), m.getPartid(), username));
 		}
 		return list;
 	}
-	
+
+	// 메세지 페이지 네이션
+	public ArrayList<MessageDto> getMessageByRoomId2(int page, String roomId) {
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+		LocalDateTime startTime = LocalDateTime.now().minusMinutes(60 * (page + 1));
+		LocalDateTime endTime = LocalDateTime.now().minusMinutes(60 * page);
+		Page<Message> messages = messagedao.findMessagesByRoom_ChatroomidAndSendDateBetween(roomId, startTime, endTime, PageRequest.of(0, 50));
+		ArrayList<MessageDto> list = new ArrayList<>();
+		for (Message message : messages) {
+			String username = usersService.getById(message.getSender()).getUsernm();
+			list.add(new MessageDto(message.getId(), message.getRoom(), message.getContent(), message.getSendDate(),
+					message.getSender(), message.getType(), message.getFileName(), message.getFileId(),
+					message.getFileRoot(), message.getPartid(), username));
+		}
+		stopWatch.stop();
+		System.out.println(stopWatch.prettyPrint());
+		return list;
+	}
+
 	public String getRecentMessageByRoomId(String roomId) {
 		List<Message> l = messagedao.findByRoom_ChatroomidOrderByIdAsc(roomId);
 		String recentMsg = "";
-		for(int i=0; i<l.size(); i++) {
-			recentMsg = l.get(l.size()-1).getContent();
+		for (int i = 0; i < l.size(); i++) {
+			recentMsg = l.get(l.size() - 1).getContent();
 		}
-		if(recentMsg == null) {
+		if (recentMsg == null) {
 			recentMsg = "";
 		}
 		recentMsg = recentMsg.replaceAll("<br>", " ");
-		if(recentMsg.length() >= 13) {
-			recentMsg = recentMsg.substring(0, 12) + "..."; 
+		if (recentMsg.length() >= 13) {
+			recentMsg = recentMsg.substring(0, 12) + "...";
 		}
 		return recentMsg;
 	}
-	
+
 	public void outTypeMessage(MessageDto chatMessage, String roomId) {
 		String osg = chatRoomService.getOutChatRoom(roomId, chatMessage.getSender());
 		String partN = usersService.getById2(chatMessage.getSender()).getUsernm();
 		chatMessage.setContent(osg);
 		chatMessage.setPartid(partN);
 	}
-	
+
 	public void fileTypeMessage(MessageDto chatMessage, String roomId) {
 		String wpath = "http://localhost:8081/files/" + chatMessage.getFileName();
-        chatMessage.setFileRoot(wpath);
-        chatMessage.setFileId(UUID.randomUUID().toString());
-        chatMessage.setContent("FILE");
+		chatMessage.setFileRoot(wpath);
+		chatMessage.setFileId(UUID.randomUUID().toString());
+		chatMessage.setContent("FILE");
 	}
-	
-	public Map<String, Object> FileuploadMethod(MultipartFile file){
+
+	public Map<String, Object> FileuploadMethod(MultipartFile file) {
 		try {
 			String originalFilename = file.getOriginalFilename();
 			String fileRoot = path + "/" + originalFilename;
