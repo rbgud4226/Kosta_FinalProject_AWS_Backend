@@ -408,18 +408,18 @@ public class ChatRoomService {
 	}
 	
 	//controller inviteChatRoom
-	public void inviteChatRoomMethod(List<String> userid, String chatroomid, String loginId) {
+	public void inviteChatRoomMethod(List<String> userid, String chatroomid, String loginId, int page) {
 		    ArrayList<String> mes = inviteUserToChatRoom(chatroomid, userid, loginId);
 		    String inviteContent = String.join("<br/>", mes);
 		    MessageDto inviteMessage = createInviteMessage(userid, chatroomid, loginId, inviteContent);
-		    messageController.sendMessage(inviteMessage, chatroomid);
+		    messageController.sendMessage(inviteMessage, chatroomid, page);
 	}
 	
 	//controller getOutRoom
-	public void getoutChatRoomMethod(String roomId, String userid) {
+	public void getoutChatRoomMethod(String roomId, String userid, int page) {
 		String mes = getOutChatRoom(roomId, userid);
 		MessageDto getOutMessage = getOutMessage(roomId, userid, mes);
-		messageController.sendMessage(getOutMessage, roomId);
+		messageController.sendMessage(getOutMessage, roomId, page);
 	}
 	
 	//controller getChatRoomsByUserId
