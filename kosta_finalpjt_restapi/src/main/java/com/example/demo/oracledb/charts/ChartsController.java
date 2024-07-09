@@ -13,7 +13,7 @@ import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/auth/chart")
+@RequestMapping("/chart")
 public class ChartsController {
   @Autowired
   private ChartsService service;
@@ -56,10 +56,10 @@ public class ChartsController {
   }
 
   @GetMapping("/list")
-  public ResponseEntity<List<ChartsDto>> list(HttpServletRequest req){
-    String token = myTokenProvider.resolveToken(req);
-    String id = myTokenProvider.getUserName(token);
-    List<ChartsDto> list = service.getbyUsers(id);
+  public ResponseEntity<List<ChartsDto>> list(@RequestParam String userid){
+    System.out.println("userid 받아보기 : " + userid);
+    List<ChartsDto> list = service.getbyUsers(userid);
+    System.out.println("list 호출됨");
     return new ResponseEntity<>(list, HttpStatus.OK);
   }
 
@@ -99,6 +99,19 @@ public class ChartsController {
     for (String userid : userids) {
       service.save(new ChartsDto(new Users(userid, null, null, null, 0, null), 0, dto.getChartResource(), dto.getTitle(),
           dto.getSt(), dto.getEd(), dto.getPercent(), dto.getDependencies(), dto.getChartStatus()));
+    }
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @PostMapping("/updateCheckbox")
+  public ResponseEntity<Void> UpdateCheckbox(@RequestParam int taskid, @RequestParam String check){
+    ChartsDto dto = service.get(taskid);
+    if(check.equals("yes")){
+      service.save(new ChartsDto(dto.getUsers(), taskid, dto.getChartResource(), dto.getTitle(),
+          dto.getSt(), dto.getEd(), dto.getPercent(), dto.getDependencies(), "no"));
+    } else {
+      service.save(new ChartsDto(dto.getUsers(), taskid, dto.getChartResource(), dto.getTitle(),
+          dto.getSt(), dto.getEd(), dto.getPercent(), dto.getDependencies(), "yes"));
     }
     return new ResponseEntity<>(HttpStatus.OK);
   }
