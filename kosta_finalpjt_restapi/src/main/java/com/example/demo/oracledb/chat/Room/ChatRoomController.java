@@ -32,8 +32,7 @@ public class ChatRoomController {
 	//채팅방 생성
 	@PostMapping("/chat/chatroom")
 	@ResponseBody
-	public Map createChatRoom(@RequestParam(name = "userid") List<String> userid) {
-		System.out.println("채팅방 생성테스트" + userid);
+	public Map createChatRoom(@RequestParam("userid[]") List<String> userid) {
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		ModelMap chatRoomInfo = chatRoomService.createChatRoomByUserList(userid, loginId);
 		return chatRoomInfo;

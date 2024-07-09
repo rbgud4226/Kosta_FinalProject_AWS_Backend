@@ -39,33 +39,33 @@ public class MessageController {
 	public void sendMessage(@Payload MessageDto chatMessage, @DestinationVariable String roomId, @DestinationVariable int page) {
 		if (chatMessage.getType().equals("OUT")) {
 			messageService.save(chatMessage, roomId);
-			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1 ,roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId3(page-1 ,roomId);
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
 			messagingTemplate.convertAndSend("/recent/update", roomId);
 		} else if (chatMessage.getType().equals("FILE")) {
 			messageService.fileTypeMessage(chatMessage, roomId);
 			messageService.save(chatMessage, roomId);
-			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1, roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId3(page-1, roomId);
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
 			messagingTemplate.convertAndSend("/recent/update", roomId);
 		} else if (chatMessage.getType().equals("INVITE")) {
 			messageService.save(chatMessage, roomId);
-			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1, roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId3(page-1, roomId);
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
 			messagingTemplate.convertAndSend("/recent/update", roomId);
 		} else {
 			messageService.save(chatMessage, roomId);
-			ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page-1,roomId);
+			ArrayList<MessageDto> list = messageService.getMessageByRoomId3(page-1,roomId);
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
 			messagingTemplate.convertAndSend("/recent/update", roomId);
 		}
 	}
 
-	@PostMapping("/chat/message/room2")
+	@PostMapping("/chat/message/room3")
 	@ResponseBody
 	public Map getMessages(@RequestParam String roomid, @Positive @RequestParam int page) {
 		Map map = new HashMap();
-		ArrayList<MessageDto> list = messageService.getMessageByRoomId2(page -1,roomid);
+		ArrayList<MessageDto> list = messageService.getMessageByRoomId3(page -1,roomid);
 		if (list.isEmpty()) {
 			ArrayList<MessageDto> l = new ArrayList<>();
 			map.put("list", l);

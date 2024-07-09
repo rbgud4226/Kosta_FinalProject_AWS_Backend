@@ -83,7 +83,7 @@ public class ChatRoomService {
 	private ChatRoom createNewChatRoom(List<String> userIds, String name) {
 		List<String> participantsN = new ArrayList<>();
 		for (String s : userIds) {
-			participantsN.add(usersService.getById2(s).getUsernm());
+			participantsN.add(usersService.getById(s).getUsernm());
 		}
 		String partN = createPartName(participantsN);
 
