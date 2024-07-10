@@ -13,12 +13,14 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -33,11 +35,8 @@ import com.example.demo.oracledb.users.Users;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.http.HttpSession;
-
-
+@CrossOrigin(origins = "*")
 @Controller
-@RequestMapping("/auth/record")
 public class WorkInOutRecordController {
   @Autowired
   private WorkInOutRecordService service;
@@ -55,13 +54,17 @@ public class WorkInOutRecordController {
 
   //개인
   //출퇴근 기록 페이지로 이동하기
-  @GetMapping("/my")
-  public String myrecord(HttpSession session, ModelMap map) {
-    String loginid = (String) session.getAttribute("loginId");
+  @ResponseBody
+  @GetMapping("/auth/record/my")
+  public Map myrecord() {
+	 System.out.println("페이지 접속");
+	Map map = new HashMap<>();
+	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String loginid =  auth.getName();
     MembersDto md = mservice.getByuserId(loginid);
     Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
     if (m == null) {
-      return "error";
+      return null;
     }
     //출근기록x
     boolean flag = false;
@@ -91,13 +94,14 @@ public class WorkInOutRecordController {
     map.put("mynum", m.getMemberid());
     //퇴근 기록 반환
 	map.put("out", out);
-    return "record/my";
+    return map;
   }
 
   //출근하기
   @ResponseBody
-  @PostMapping("/in")
+  @PostMapping("/record/in")
   public Map workin(String Members) {
+	System.out.println(Members);
     MembersDto md = mservice.getByuserId(Members);
     Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
     String type = "출근";
@@ -111,7 +115,7 @@ public class WorkInOutRecordController {
       type = "지각";
     }
     WorkInOutRecordDto d = service.save(new WorkInOutRecordDto(0, m, null, null, null, null, null, type));
-    System.out.println(d);
+
     Map map = new HashMap<>();
     map.put("num", d.getDaynum());
     map.put("flag", "true");
@@ -124,6 +128,7 @@ public class WorkInOutRecordController {
   @ResponseBody
   @PostMapping("/out")
   public void workout(String Members, int memberid) {
+	System.out.println("mem: "+Members+" /id:"+memberid);
     WorkInOutRecordDto w = service.select(memberid);
     String type = "정상근무";
 
@@ -217,7 +222,7 @@ public class WorkInOutRecordController {
   }
 
   //부서 근태 부서장 페이지 이동
-  @GetMapping("/dept")
+  @GetMapping("/auth/record/dept")
   public ModelAndView deptList(int dept) {
     ModelAndView mav = new ModelAndView("record/dept");
     mav.addObject("record",deptLeader(deptRecord(dept, 0)));
@@ -227,7 +232,7 @@ public class WorkInOutRecordController {
 
   //관리자(부서별 데이터 가져오기)
   @ResponseBody
-  @GetMapping("/list")
+  @GetMapping("/auth/record/list")
   public ArrayList<ChartDeptMember> deptRecord(int dept, int cnt) {
     // 현재 날짜 가져오기
     LocalDate currentDate = LocalDate.now();

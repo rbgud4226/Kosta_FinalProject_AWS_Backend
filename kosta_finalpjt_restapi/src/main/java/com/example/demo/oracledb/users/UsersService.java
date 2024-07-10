@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.catalina.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,8 +51,8 @@ public class UsersService {
 	}
 
 	// 비밀번호 수정
-	public void updatePwd(UsersDto dto) {
-		dao.updatePwd(dto.getId(), passwordEncoder.encode(dto.getNewpwd()));
+	public void updatePwd(String id, String newpwd) {
+		dao.updatePwd(id, passwordEncoder.encode(newpwd));
 	}
 
 	// user 더미 데이터 생성 용도
@@ -186,7 +187,7 @@ public class UsersService {
 	public void delMember(String id) {
 		dao.deleteById(id);
 	}
-
+	
 	// 회원가입 유효성 검사
 	@Transactional(readOnly = true)
 	public Map<String, String> validateHandling(Errors errors) {

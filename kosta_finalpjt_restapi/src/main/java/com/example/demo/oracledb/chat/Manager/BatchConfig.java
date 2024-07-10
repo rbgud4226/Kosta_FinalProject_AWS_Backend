@@ -148,4 +148,5 @@ public class BatchConfig extends DefaultBatchConfiguration {
             jobLauncher.run(chatManageJob, jobParametersBuilder.toJobParameters());
         }
     }
+
 }
