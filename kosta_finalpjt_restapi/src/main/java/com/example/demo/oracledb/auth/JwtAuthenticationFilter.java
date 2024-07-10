@@ -35,22 +35,19 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 //		res.setStatus(HttpServletResponse.SC_OK);
 		
 		// TODO Auto-generated method stub
-				HttpServletResponse res = (HttpServletResponse) response;
-				HttpServletRequest req = (HttpServletRequest) request;
-				res.setHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+    HttpServletResponse res = (HttpServletResponse) response;
+    HttpServletRequest req = (HttpServletRequest) request;
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:8081");
 //				res.setHeader("Access-Control-Allow-Origin", "*");
-				 String origin = req.getHeader("Origin");
-		         res.setHeader("Access-Control-Allow-Origin", allowedOrigins.contains(origin) ? origin : "");
-		         res.setHeader("Vary", "Origin");
-		         
-				res.setHeader("Access-Control-Allow-Credentials", "true");
-			    res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
-				res.setHeader("Access-Control-Allow-Max-Age", "3600");
-				res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-				res.setStatus(HttpServletResponse.SC_OK);
-		
-		
-		
+     String origin = req.getHeader("Origin");
+         res.setHeader("Access-Control-Allow-Origin", allowedOrigins.contains(origin) ? origin : "");
+         res.setHeader("Vary", "Origin");
+
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
+    res.setHeader("Access-Control-Allow-Max-Age", "3600");
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.setStatus(HttpServletResponse.SC_OK);
 
 		String token = myTokenProvider.resolveToken((HttpServletRequest) request);
 		if (token != null && myTokenProvider.validateToken(token)) {
