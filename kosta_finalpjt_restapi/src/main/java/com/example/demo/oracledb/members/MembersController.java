@@ -231,6 +231,18 @@ public class MembersController {
 		memchatinfo.put("membername", username.getUsernm());
 		return memchatinfo;
 	}
+	
+	@PostMapping("/member/memberchatinfo/membername")
+	@ResponseBody
+	public Map memberchatinfomembername(@RequestParam("userid[]") List<String> userid) {
+		Map map = new HashMap();
+		ArrayList<String> list = new ArrayList<>();
+		for(String s : userid) {
+			list.add(uservice.getById2(s).getUsernm());
+		}
+		map.put("namelist", list);
+		return map;
+	}
 
 	@GetMapping("/member/memberimg/{memberimgnm}")
 	public ResponseEntity<byte[]> read_img(@PathVariable("memberimgnm") String memberimgnm) {

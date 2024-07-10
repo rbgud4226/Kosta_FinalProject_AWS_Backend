@@ -1,8 +1,8 @@
 package com.example.demo.oracledb.chat.Message;
 
 import java.io.File;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.oracledb.chat.Room.ChatRoom;
@@ -53,24 +52,9 @@ public class MessageService {
 		return messagedao.save(ms);
 	}
 
-	public ArrayList<MessageDto> getMessageByRoomId(String roomId) {
-		List<Message> l = messagedao.findByRoom_ChatroomidOrderByIdAsc(roomId);
-		ArrayList<MessageDto> list = new ArrayList<>();
-		for (Message m : l) {
-			String username = usersService.getById2(m.getSender()).getUsernm();
-			list.add(new MessageDto(m.getId(), m.getRoom(), m.getContent(), m.getSendDate(), m.getSender(), m.getType(),
-					m.getFileName(), m.getFileId(), m.getFileRoot(), m.getPartid(), username));
-		}
-		return list;
-	}
-
-	// 메세지 페이지 네이션
-	public ArrayList<MessageDto> getMessageByRoomId2(int page, String roomId) {
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-		LocalDateTime startTime = LocalDateTime.now().minusMinutes(60 * (page + 1));
-		LocalDateTime endTime = LocalDateTime.now().minusMinutes(60 * page);
-		Page<Message> messages = messagedao.findMessagesByRoom_ChatroomidAndSendDateBetween(roomId, startTime, endTime, PageRequest.of(0, 50));
+	public ArrayList<MessageDto> getMessageByRoomId3(int page, String roomId) {
+		PageRequest pageRequest = PageRequest.of(page, 10);
+		Page<Message> messages = messagedao.findByRoom_ChatroomidOrderBySendDateDesc(roomId, pageRequest);
 		ArrayList<MessageDto> list = new ArrayList<>();
 		for (Message message : messages) {
 			String username = usersService.getById(message.getSender()).getUsernm();
@@ -78,8 +62,7 @@ public class MessageService {
 					message.getSender(), message.getType(), message.getFileName(), message.getFileId(),
 					message.getFileRoot(), message.getPartid(), username));
 		}
-		stopWatch.stop();
-		System.out.println(stopWatch.prettyPrint());
+		Collections.reverse(list);
 		return list;
 	}
 
@@ -92,7 +75,7 @@ public class MessageService {
 		if (recentMsg == null) {
 			recentMsg = "";
 		}
-		recentMsg = recentMsg.replaceAll("<br>", " ");
+		recentMsg = recentMsg.replaceAll("<br/>", " ");
 		if (recentMsg.length() >= 13) {
 			recentMsg = recentMsg.substring(0, 12) + "...";
 		}

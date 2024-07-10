@@ -83,7 +83,7 @@ public class ChatRoomService {
 	private ChatRoom createNewChatRoom(List<String> userIds, String name) {
 		List<String> participantsN = new ArrayList<>();
 		for (String s : userIds) {
-			participantsN.add(usersService.getById2(s).getUsernm());
+			participantsN.add(usersService.getById(s).getUsernm());
 		}
 		String partN = createPartName(participantsN);
 
@@ -338,6 +338,8 @@ public class ChatRoomService {
 	
 	//controller createChatRoom
 	public ModelMap createChatRoomByUserList(List<String> userid, String loginId) {
+		System.out.println(userid.get(0));
+		System.out.println(loginId);
 		if (!userid.contains(loginId)) {
 			userid.add(loginId);
 		}
