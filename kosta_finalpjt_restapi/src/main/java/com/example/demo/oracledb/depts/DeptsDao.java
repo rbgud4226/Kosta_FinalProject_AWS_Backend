@@ -10,5 +10,6 @@ import com.example.demo.oracledb.members.Members;
 @Repository
 public interface DeptsDao extends JpaRepository<Depts, Integer> {
 	ArrayList<Depts> findByDeptnmLike(String deptnm);
+//	Depts findByMgrid(Members mgrid);
 	ArrayList<Depts> findByMgrid(Members mgrid);
 }

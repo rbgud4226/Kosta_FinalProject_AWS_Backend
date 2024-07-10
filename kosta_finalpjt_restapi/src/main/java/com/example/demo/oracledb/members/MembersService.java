@@ -196,7 +196,7 @@ public class MembersService {
 	}
 
 	public ArrayList<MembersDto> getByUsersLike(String usernm) {
-		ArrayList<Users> ulist = udao.findByUsernmLike(usernm);
+		ArrayList<Users> ulist = udao.findByUsernmLike("%" + usernm + "%");
 		ArrayList<MembersDto> list = new ArrayList<>();
 		for (Users u : ulist) {
 			Members m = mdao.findByUserid(u);
