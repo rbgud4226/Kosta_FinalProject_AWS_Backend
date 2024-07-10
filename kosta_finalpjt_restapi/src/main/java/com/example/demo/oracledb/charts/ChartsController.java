@@ -94,11 +94,13 @@ public class ChartsController {
   }
 
   @PostMapping("/share")
-  public ResponseEntity<Void> ShareChart(@RequestParam(name = "userid", required = false) List<String> userids, @RequestParam(name="taskid")int taskid){
-    ChartsDto dto = service.get(taskid);
-    for (String userid : userids) {
+  public ResponseEntity<Void> ShareChart(@RequestBody ChartShare share){
+    System.out.println(share.getTaskid());
+    ChartsDto dto = service.get(share.getTaskid());
+    for (String userid : share.getUserids()) {
       service.save(new ChartsDto(new Users(userid, null, null, null, 0, null), 0, dto.getChartResource(), dto.getTitle(),
           dto.getSt(), dto.getEd(), dto.getPercent(), dto.getDependencies(), dto.getChartStatus()));
+      System.out.println("공유 확인 : " + userid );
     }
     return new ResponseEntity<>(HttpStatus.OK);
   }
