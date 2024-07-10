@@ -80,40 +80,4 @@ public class oracleDBConfig {
         .password("hr")
         .build();
   }
-  
-  //spring.batch.jdbc.initialize-schema=always 용도
-  @Bean
-  public DataSourceInitializer dataSourceInitializer(DataSource dataSource) {
-    DataSourceInitializer initializer = new DataSourceInitializer();
-    initializer.setDataSource(dataSource);
-    ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-    populator.addScript(new ClassPathResource("org/springframework/batch/core/schema-oracle.sql"));
-    initializer.setDatabasePopulator(populator);
-    try (Connection connection = dataSource.getConnection();
-         Statement statement = connection.createStatement()) {
-        statement.execute("SELECT 1 FROM BATCH_JOB_INSTANCE WHERE 1=0");
-        initializer.setEnabled(false);
-    } catch (SQLException e) {
-        initializer.setEnabled(true);
-    }
-
-    return initializer;
-  }
-  
-  @Configuration
-  public static class SchedulerConfig {
-
-      @Autowired
-      private JobLauncher jobLauncher;
-
-      @Autowired
-      private Job chatManageJob;
-
-      @Scheduled(fixedRate = 6000000)
-      public void perform() throws Exception {
-          JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
-          jobParametersBuilder.addLong("time", System.currentTimeMillis());
-          jobLauncher.run(chatManageJob, jobParametersBuilder.toJobParameters());
-      }
-  }
 }
