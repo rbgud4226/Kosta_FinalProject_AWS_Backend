@@ -338,6 +338,8 @@ public class ChatRoomService {
 	
 	//controller createChatRoom
 	public ModelMap createChatRoomByUserList(List<String> userid, String loginId) {
+		System.out.println(userid.get(0));
+		System.out.println(loginId);
 		if (!userid.contains(loginId)) {
 			userid.add(loginId);
 		}

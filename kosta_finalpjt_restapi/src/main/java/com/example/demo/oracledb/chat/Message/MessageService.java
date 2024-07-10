@@ -75,7 +75,7 @@ public class MessageService {
 		if (recentMsg == null) {
 			recentMsg = "";
 		}
-		recentMsg = recentMsg.replaceAll("<br>", " ");
+		recentMsg = recentMsg.replaceAll("<br/>", " ");
 		if (recentMsg.length() >= 13) {
 			recentMsg = recentMsg.substring(0, 12) + "...";
 		}
