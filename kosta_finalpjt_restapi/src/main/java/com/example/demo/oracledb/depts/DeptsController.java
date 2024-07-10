@@ -7,8 +7,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.oracledb.members.MembersDto;
 import com.example.demo.oracledb.members.MembersService;
+import com.example.demo.oracledb.users.Users;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -128,19 +127,30 @@ public class DeptsController {
 	}
 
 	@PostMapping("/corp/getdeptby")
-	public ModelAndView getdeptby(String val, int type) {
+	public Map getdeptby(String val, int type) {
+		boolean flag = true;
 		ArrayList<DeptsDto> dlist = new ArrayList<DeptsDto>();
-		if (type == 1) {
-			dlist = dservice.getByDeptNm(val);
-		} else if (type == 2) {
-			MembersDto mdto = mservice.getByuserId(val);
-			dlist = dservice.getByMgrId(mdto.getMemberid());
+		try {
+			if (type == 1) {
+				dlist = dservice.getByDeptNm(val);
+			} else if (type == 2) {
+				ArrayList<MembersDto> mlist = mservice.getByUsersLike(val);
+				for (MembersDto mdto : mlist) {
+					ArrayList<DeptsDto> mgriddlist = dservice.getByMgrId(mdto.getMemberid());
+					for (DeptsDto ddto : mgriddlist) {
+						dlist.add(ddto);
+					}
+				}
+			}
+		} catch (Exception e) {
+			flag = false;
 		}
-		ModelAndView mav = new ModelAndView("corp/deptlist");
-		mav.addObject("type", type);
-		mav.addObject("val", val);
-		mav.addObject("dlist", dlist);
-		return mav;
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("type", type);
+		map.put("val", val);
+		map.put("dlist", dlist);
+		return map;
 	}
 
 	@GetMapping("/admin/corp/deptdel")
@@ -236,18 +246,24 @@ public class DeptsController {
 	}
 
 	@PostMapping("/corp/getjoblvby")
-	public ModelAndView getjoblvby(String val, int type) {
+	public Map getjoblvby(String val, int type) {
+		boolean flag = true;
 		ArrayList<JoblvsDto> jlist = new ArrayList<JoblvsDto>();
-		if (type == 1) {
-			jlist = jservice.getByJoblvId(Integer.parseInt(val));
-		} else if (type == 2) {
-			jlist = jservice.getByjoblvnmLike(val);
+		try {
+			if (type == 1) {
+				jlist = jservice.getByJoblvId(Integer.parseInt(val));
+			} else if (type == 2) {
+				jlist = jservice.getByjoblvnmLike(val);
+			}
+		} catch (Exception e) {
+			flag = false;
 		}
-		ModelAndView mav = new ModelAndView("corp/joblvlist");
-		mav.addObject("type", type);
-		mav.addObject("val", val);
-		mav.addObject("jlist", jlist);
-		return mav;
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("type", type);
+		map.put("val", val);
+		map.put("jlist", jlist);
+		return map;
 	}
 
 	@GetMapping("/admin/corp/joblvdel")
