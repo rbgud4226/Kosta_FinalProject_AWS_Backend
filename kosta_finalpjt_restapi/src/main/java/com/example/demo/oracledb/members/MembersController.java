@@ -218,7 +218,7 @@ public class MembersController {
 
 	@PostMapping("/member/memberchatinfo")
 	@ResponseBody
-	public Map<String, Object> memberchatinfo(@RequestParam(name ="userid") String userid) {
+	public Map<String, Object> memberchatinfo(@RequestParam(name = "userid") String userid) {
 		System.out.println("요청 들어오나요 ???");
 		MembersDto mdto = mservice.getByuserId(userid);
 		Users username = uservice.getById2(userid);
@@ -304,11 +304,18 @@ public class MembersController {
 	public Map memberadd(MembersDto dto, EduWorkExperienceInfoDto edto) {
 		boolean flag = true;
 		MembersDto mdto = new MembersDto();
+		System.out.println("dto.getMemberid():" + dto.getMemberid());
+		System.out.println("dto.getMemberid():" + dto.getEmail());
+		System.out.println("edto.getMemberid():" + edto.getMemberid());
 		System.out.println("flag0:" + flag);
 		System.out.println("dto:" + dto);
 		try {
-			mdto.setHiredt(dto.getHiredt());
-			mdto.setLeavedt(dto.getLeavedt());
+			if (dto.getHiredt() != null) {
+				mdto.setHiredt(dto.getHiredt());
+			}
+			if (dto.getLeavedt() != null) {
+				mdto.setLeavedt(dto.getLeavedt());
+			}
 			mdto = mservice.save(dto);
 			System.out.println("flag1:" + flag);
 			if (!dto.getMemberimgf().isEmpty()) {
@@ -331,11 +338,11 @@ public class MembersController {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-//				System.out.println("mdto.getMemberid():" + mdto.getMemberid());
-				EduWorkExperienceInfoDto eweidto = eservice.save(edto);
+				System.out.println("mdto.getMemberid():" + mdto.getMemberid());
+				EduWorkExperienceInfoDto eweidto = new EduWorkExperienceInfoDto();
 				eweidto.setMemberid(new Members(null, mdto.getMemberid(), null, null, null, null, null, null, null,
 						null, null, null, null));
-				eservice.save(eweidto);
+				eweidto = eservice.save(edto);
 			}
 			System.out.println("flag3:" + flag);
 		} catch (Exception e) {
@@ -345,7 +352,8 @@ public class MembersController {
 		Map map = new HashMap<>();
 		map.put("flag", flag);
 		System.out.println("flag5:" + flag);
-		map.put("id", dto.getUserid().getId());
+//		System.out.println(dto.getUserid().getId());
+//		map.put("id", dto.getUserid().getId());
 		return map;
 	}
 
