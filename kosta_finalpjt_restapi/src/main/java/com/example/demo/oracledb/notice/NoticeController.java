@@ -37,7 +37,6 @@ public class NoticeController {
 	@PostMapping("/notice/add")
 	@ResponseBody
 	public Map addNotice(@ModelAttribute NoticeDto dto, @RequestParam String dept) {
-		System.out.println("무슨에러 ???");
 		boolean flag = false;
 		Map map = new HashMap();
 		try {

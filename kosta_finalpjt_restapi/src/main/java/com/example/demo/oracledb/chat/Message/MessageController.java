@@ -54,8 +54,6 @@ public class MessageController {
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
 			messagingTemplate.convertAndSend("/recent/update", roomId);
 		} else {
-			//
-			//
 			messageService.save(chatMessage, roomId);
 			ArrayList<MessageDto> list = messageService.getMessageByRoomId3(page-1,roomId);
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
@@ -80,7 +78,6 @@ public class MessageController {
 	@PostMapping("/chat/message/upload")
 	@ResponseBody
 	public Map<String, Object> FileUpload(@RequestParam("file") MultipartFile file) {
-		System.out.println("요청오는지 테스트");
 		return messageService.FileuploadMethod(file);
 	}
 }
