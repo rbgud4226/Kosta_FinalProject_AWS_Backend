@@ -186,9 +186,11 @@ public class MembersService {
 		for (Depts d : dlist) {
 			List<Members> l = mdao.findByDeptid(d);
 			for (Members m : l) {
-				list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
-						m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
-						m.getJoblvid(), m.getMgrid(), null, null));
+				if (m.getUserid().getAprov() == 1) {
+					list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
+							m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
+							m.getJoblvid(), m.getMgrid(), null, null));
+				}
 			}
 
 		}
@@ -214,9 +216,11 @@ public class MembersService {
 		for (Joblvs j : jlist) {
 			List<Members> l = mdao.findByJoblvid(j);
 			for (Members m : l) {
-				list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
-						m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
-						m.getJoblvid(), m.getMgrid(), null, null));
+				if (m.getUserid().getAprov() == 1) {
+					list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
+							m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
+							m.getJoblvid(), m.getMgrid(), null, null));
+				}
 			}
 		}
 		return list;

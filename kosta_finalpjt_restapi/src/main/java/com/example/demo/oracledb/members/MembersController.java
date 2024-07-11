@@ -109,8 +109,9 @@ public class MembersController {
 				} else if (type == 2) {
 					ArrayList<UsersDto> ulist = uservice.getByUsernmLike(val);
 					for (UsersDto udto : ulist) {
-						if (udto != null
-								&& mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)) != null) {
+						if (udto != null && mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)) != null
+								&& mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)).getUserid()
+										.getAprov() == 1) {
 							mlist.add(mservice.getByuserNm(new Users(udto.getId(), "", "", "", 0, null)));
 						}
 					}
@@ -231,13 +232,13 @@ public class MembersController {
 		memchatinfo.put("membername", username.getUsernm());
 		return memchatinfo;
 	}
-	
+
 	@PostMapping("/member/memberchatinfo/membername")
 	@ResponseBody
 	public Map memberchatinfomembername(@RequestParam("userid[]") List<String> userid) {
 		Map map = new HashMap();
 		ArrayList<String> list = new ArrayList<>();
-		for(String s : userid) {
+		for (String s : userid) {
 			list.add(uservice.getById2(s).getUsernm());
 		}
 		map.put("namelist", list);
