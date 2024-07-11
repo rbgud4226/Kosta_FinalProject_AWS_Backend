@@ -132,17 +132,27 @@ public class DeptsController {
 		ArrayList<DeptsDto> dlist = new ArrayList<DeptsDto>();
 		try {
 			if (type == 1) {
+				System.out.println("val:" + val);
 				dlist = dservice.getByDeptNm(val);
+				System.out.println("dlist:" + dlist);
 			} else if (type == 2) {
-				ArrayList<MembersDto> mlist = mservice.getByUsersLike(val);
-				for (MembersDto mdto : mlist) {
-					ArrayList<DeptsDto> mgriddlist = dservice.getByMgrId(mdto.getMemberid());
-					for (DeptsDto ddto : mgriddlist) {
-						dlist.add(ddto);
+				System.out.println("===error1===");
+				System.out.println("val:" + val);
+				if (!val.isEmpty()) {
+					ArrayList<MembersDto> mlist = mservice.getByUsersLike(val);
+					for (MembersDto mdto : mlist) {
+						ArrayList<DeptsDto> mgriddlist = dservice.getByMgrId(mdto.getMemberid());
+						for (DeptsDto ddto : mgriddlist) {
+							dlist.add(ddto);
+						}
 					}
+				} else {
+					dlist = dservice.getByDeptNm(val);
 				}
+
 			}
 		} catch (Exception e) {
+			System.out.println("===error1===");
 			flag = false;
 		}
 		Map map = new HashMap();
@@ -251,10 +261,20 @@ public class DeptsController {
 		ArrayList<JoblvsDto> jlist = new ArrayList<JoblvsDto>();
 		try {
 			if (type == 1) {
-				jlist = jservice.getByJoblvId(Integer.parseInt(val));
+				if (val == "") {
+					jlist = jservice.getByjoblvnmLike(val);
+				} else {
+					try {
+						jlist = jservice.getByJoblvId(Integer.parseInt(val));
+					} catch (NumberFormatException var3) {
+						jlist = jservice.getByjoblvnmLike(val);
+					}
+				}
+
 			} else if (type == 2) {
 				jlist = jservice.getByjoblvnmLike(val);
 			}
+
 		} catch (Exception e) {
 			flag = false;
 		}
@@ -265,6 +285,43 @@ public class DeptsController {
 		map.put("jlist", jlist);
 		return map;
 	}
+
+//	@PostMapping("/corp/getdeptby")
+//	public Map getdeptby(String val, int type) {
+//		boolean flag = true;
+//		ArrayList<DeptsDto> dlist = new ArrayList<DeptsDto>();
+//		try {
+//			if (type == 1) {
+//				System.out.println("val:" + val);
+//				dlist = dservice.getByDeptNm(val);
+//				System.out.println("dlist:" + dlist);
+//			} else if (type == 2) {
+//				System.out.println("===error1===");
+//				System.out.println("val:" + val);
+//				if (!val.isEmpty()) {
+//					ArrayList<MembersDto> mlist = mservice.getByUsersLike(val);
+//					for (MembersDto mdto : mlist) {
+//						ArrayList<DeptsDto> mgriddlist = dservice.getByMgrId(mdto.getMemberid());
+//						for (DeptsDto ddto : mgriddlist) {
+//							dlist.add(ddto);
+//						}
+//					}
+//				} else {
+//					dlist = dservice.getByDeptNm(val);
+//				}
+//
+//			}
+//		} catch (Exception e) {
+//			System.out.println("===error1===");
+//			flag = false;
+//		}
+//		Map map = new HashMap();
+//		map.put("flag", flag);
+//		map.put("type", type);
+//		map.put("val", val);
+//		map.put("dlist", dlist);
+//		return map;
+//	}
 
 	@GetMapping("/admin/corp/joblvdel")
 	public String joblvdel(int joblvidx) {
