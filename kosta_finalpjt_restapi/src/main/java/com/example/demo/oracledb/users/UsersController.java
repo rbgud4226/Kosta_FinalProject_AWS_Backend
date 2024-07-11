@@ -188,10 +188,14 @@ public class UsersController {
 		MembersDto mdto = new MembersDto();
 		try {
 			udto = uservice.getById(id);
-			mdto = mservice.getByuserId(id);
-			udto.setMemberdto(mdto);
-			udto.setAprov(aprov);
-			uservice.update(udto);
+			if (mservice.getByuserId(id) != null) {
+				mdto = mservice.getByuserId(id);
+				udto.setMemberdto(mdto);
+				udto.setAprov(aprov);
+				uservice.update(udto);
+			} else {
+				flag = false;
+			}
 
 			if (aprov == 3) {
 				mdto.setLeavedt(LocalDate.from(LocalDateTime.now()));
@@ -292,86 +296,15 @@ public class UsersController {
 		return map;
 	}
 
-	@PostMapping("/admin/user/getdeptby")
+	@PostMapping("/admin/user/getuserby")
 	public Map getuserby(String val, int type) {
 		boolean flag = true;
 		ArrayList<UsersDto> ulist = new ArrayList<UsersDto>();
 		try {
-			if (type == 1) {
-				ulist = uservice.getByIdLike(val);
-				for (UsersDto udto : ulist) {
-					MembersDto mdto = mservice.getByuserId(udto.getId());
-					try {
-						if (mdto.getUserid() == null) {
-							udto.setMemberdto(new MembersDto(null, 0, null, null, null, null, null, null, null, null,
-									null, null, null, null));
-						} else if (mdto.getUserid() != null && udto.getId() == mdto.getUserid().getId()) {
-							udto.setMemberdto(mdto);
-						}
-					} catch (NullPointerException e) {
-//					e.printStackTrace();
-					} catch (Exception e) {
-//					e.printStackTrace();
-					}
-				}
-			} else if (type == 2) {
-				ulist = new ArrayList<UsersDto>();
-				for (UsersDto udto : uservice.getAll()) {
-					if (val != "") {
-						ArrayList<MembersDto> mlist = mservice.getByDeptNmLike(val);
-						System.out.println("mlist:" + mlist);
-						for (MembersDto mdto : mlist) {
-							if (udto.getMemberdto() != null && udto.getId() == mdto.getUserid().getId()) {
-								udto.setMemberdto(mdto);
-								ulist.add(udto);
-							}
-						}
-					} else {
-						ulist = null;
-					}
-				}
-			} else if (type == 3) {
-				ulist = new ArrayList<UsersDto>();
-				for (UsersDto udto : uservice.getByUsernmLike(val)) {
-					if (val != "") {
-						MembersDto mdto = mservice.getByuserId(udto.getId());
-						udto.setMemberdto(mdto);
-						ulist.add(udto);
-					} else {
-						ulist = null;
-					}
-				}
-			} else if (type == 4) {
-				ulist = new ArrayList<UsersDto>();
-				for (UsersDto udto : uservice.getAll()) {
-					if (val != "") {
-						ArrayList<MembersDto> mlist = mservice.getByJobLvLike(val);
-						for (MembersDto mdto : mlist) {
-							if (udto.getMemberdto() != null && udto.getId() == mdto.getUserid().getId()) {
-								udto.setMemberdto(mdto);
-								ulist.add(udto);
-							}
-						}
-					} else {
-						ulist = null;
-					}
-				}
-			} else if (type == 5) {
-				int valInt = 4;
-				if (val != "") {
-					if (val.contains("미") || val.contains("대") || val.contains("미승인")) {
-						valInt = 0;
-					} else if (val.contains("재") || val.contains("승인")) {
-						valInt = 1;
-					} else if (val.contains("휴")) {
-						valInt = 2;
-					} else if (val.contains("퇴")) {
-						valInt = 3;
-					} else {
-						valInt = 5;
-					}
-//					System.out.println(valInt);
-					ulist = uservice.getByAprov(valInt);
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
+				if (type == 1) {
+					ulist = uservice.getByIdLike(val);
 					for (UsersDto udto : ulist) {
 						MembersDto mdto = mservice.getByuserId(udto.getId());
 						try {
@@ -387,8 +320,84 @@ public class UsersController {
 //					e.printStackTrace();
 						}
 					}
+				} else if (type == 2) {
+					ulist = new ArrayList<UsersDto>();
+					for (UsersDto udto : uservice.getAll()) {
+						if (val != "") {
+							ArrayList<MembersDto> mlist = mservice.getByDeptNmLike(val);
+							System.out.println("mlist:" + mlist);
+							for (MembersDto mdto : mlist) {
+								if (udto.getMemberdto() != null && udto.getId() == mdto.getUserid().getId()) {
+									udto.setMemberdto(mdto);
+									ulist.add(udto);
+								}
+							}
+						} else {
+							ulist = null;
+						}
+					}
+				} else if (type == 3) {
+					ulist = new ArrayList<UsersDto>();
+					for (UsersDto udto : uservice.getByUsernmLike(val)) {
+						if (val != "") {
+							MembersDto mdto = mservice.getByuserId(udto.getId());
+							udto.setMemberdto(mdto);
+							ulist.add(udto);
+						} else {
+							ulist = null;
+						}
+					}
+				} else if (type == 4) {
+					ulist = new ArrayList<UsersDto>();
+					for (UsersDto udto : uservice.getAll()) {
+						if (val != "") {
+							ArrayList<MembersDto> mlist = mservice.getByJobLvLike(val);
+							for (MembersDto mdto : mlist) {
+								if (udto.getMemberdto() != null && udto.getId() == mdto.getUserid().getId()) {
+									udto.setMemberdto(mdto);
+									ulist.add(udto);
+								}
+							}
+						} else {
+							ulist = null;
+						}
+					}
+				} else if (type == 5) {
+					int valInt = 4;
+					if (val != "") {
+						if (val.contains("미") || val.contains("대") || val.contains("미승인")) {
+							valInt = 0;
+						} else if (val.contains("재") || val.contains("승인")) {
+							valInt = 1;
+						} else if (val.contains("휴")) {
+							valInt = 2;
+						} else if (val.contains("퇴")) {
+							valInt = 3;
+						} else {
+							valInt = 5;
+						}
+//					System.out.println(valInt);
+						ulist = uservice.getByAprov(valInt);
+						for (UsersDto udto : ulist) {
+							MembersDto mdto = mservice.getByuserId(udto.getId());
+							try {
+								if (mdto.getUserid() == null) {
+									udto.setMemberdto(new MembersDto(null, 0, null, null, null, null, null, null, null,
+											null, null, null, null, null));
+								} else if (mdto.getUserid() != null && udto.getId() == mdto.getUserid().getId()) {
+									udto.setMemberdto(mdto);
+								}
+							} catch (NullPointerException e) {
+//					e.printStackTrace();
+							} catch (Exception e) {
+//					e.printStackTrace();
+							}
+						}
+					} else {
+						ulist = null;
+					}
 				} else {
-					ulist = null;
+					flag = false;
 				}
 //			System.out.println("valint:" + uservice.getByAprov(Integer.parseInt(val)));
 			}
