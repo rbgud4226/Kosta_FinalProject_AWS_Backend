@@ -145,15 +145,24 @@ public class ChatRoomService {
 		}
 		return getOutMessage;
 	}
-
+	
 	public ArrayList<ChatRoomDto> getChatRoomsListByName(String name, String loginId) {
 		List<ChatRoom> l = chatRoomDao.findAll();
 		String partN = usersService.getById2(loginId).getUsernm();
 		ArrayList<ChatRoomDto> list = new ArrayList<>();
+		String imgL = "";
 		for (ChatRoom cr : l) {
 			if (cr.getParticipants().contains(partN) && cr.getParticipants().contains(name) && cr.isStatus()) {
+				String[] pids = cr.getName().split("_");
+				String pid = "";
+				for(String s: pids) {
+					if(!s.equals(loginId)) {
+						pid = s;
+						imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm(); 
+					}
+				}
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
-						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), null, null));
+						cr.getChats(), cr.getRoomUsers(), cr.isStatus(), null, cr.getParticipants(), imgL, null));
 			}
 		}
 		return list;
@@ -174,12 +183,9 @@ public class ChatRoomService {
 				for (String name : nameList) {
 					if (name.equals(loginId)) {
 						String userId = usersService.getById2(loginId).getId();
-						imgL = memberService.getByuserId(userId).getMemberimgnm();
 						break;
 					} else {
 						String userId = usersService.getById2(name).getId();
-						System.out.println("===error1===");
-						System.out.println("userId:" + userId);
 						if (memberService.getByuserId(userId) == null) {
 							imgL = "";
 						} else {
@@ -209,8 +215,6 @@ public class ChatRoomService {
 			for (String l : nameL) {
 				if (!l.equals(userId1)) {
 					String userid = usersService.getById2(l).getId();
-					System.out.println("===error1===");
-					System.out.println("userId:" + userId1);
 					if (memberService.getByuserId(userid) == null) {
 						imgL = "";
 					} else {
@@ -366,7 +370,6 @@ public class ChatRoomService {
 
 	// controller getChatRoomsForRecentAndLoad
 	public ArrayList<ChatRoomDto> recentAndLoad(String userid) {
-		System.out.println("===error2===");
 		ArrayList<ChatRoomDto> cr = getAllChatRooms(userid);
 		for (ChatRoomDto chatRoom : cr) {
 			String recentMsg = messageService.getRecentMessageByRoomId(chatRoom.getChatroomid());
