@@ -60,11 +60,12 @@ public class WorkInOutRecordController {
 	Map map = new HashMap<>();
 	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     String loginid =  auth.getName();
+    System.out.println("loginid:" + loginid);
     MembersDto md = mservice.getByuserId(loginid);
-    Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
-    if (m == null) {
-      return null;
+    if (md == null) {
+    	return null;
     }
+    Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
     //출근기록x
     boolean flag = false;
     boolean out = false;
@@ -202,6 +203,9 @@ public class WorkInOutRecordController {
   @GetMapping("/getmonth")
   public Map myrecord(String Members, int count) {
     MembersDto md = mservice.getByuserId(Members);
+    if(md == null ) {
+    	return null;
+    }
     Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
     // 현재 날짜 가져오기
     LocalDate currentDate = LocalDate.now();

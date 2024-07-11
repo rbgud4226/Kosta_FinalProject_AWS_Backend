@@ -32,8 +32,7 @@ public class ChatRoomController {
 	//채팅방 생성
 	@PostMapping("/chat/chatroom")
 	@ResponseBody
-	public Map createChatRoom(@RequestParam(name = "userid") List<String> userid) {
-		System.out.println("채팅방 생성테스트" + userid);
+	public Map createChatRoom(@RequestParam("userid[]") List<String> userid) {
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		ModelMap chatRoomInfo = chatRoomService.createChatRoomByUserList(userid, loginId);
 		return chatRoomInfo;
@@ -60,7 +59,7 @@ public class ChatRoomController {
 	// 채팅방 검색(유저 이름으로)
 	@PostMapping("/chat/chatrooms/loadrooms/search")
 	@ResponseBody
-	public Map getChatRoomsSearch(String userName) {
+	public Map getChatRoomsSearch(@RequestParam(name="userName") String userName) {
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		Map map = new HashMap();
 		map.put("list", chatRoomService.chatRoomsSearch(userName, loginId));
@@ -92,17 +91,17 @@ public class ChatRoomController {
 		map.put("flag", flag);
 		return map;
 	}
-
-	// 채팅방 초대하기(채팅방 번호, 초대할 유저 id 리스트, 로그인한 id)
+	
+	//초대 테스트해봐야됨
 	@PostMapping("/chat/chatrooms/invite")
 	@ResponseBody
-	public Map inviteChatRoom(@RequestParam(name = "userid") List<String> userids, String chatroomid, @RequestParam int page) {
+	public Map inviteChatRoom(@RequestParam("userid[]") List<String> userid, String chatroomid, @RequestParam int page) {
 		System.out.println("요청은 오냐?");
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		Map map = new HashMap();
 		boolean flag = false;
 		try {
-			chatRoomService.inviteChatRoomMethod(userids, chatroomid, loginId, page);
+			chatRoomService.inviteChatRoomMethod(userid, chatroomid, loginId, page);
 			flag = true;
 		} catch (IOException e) {
 			flag = false;

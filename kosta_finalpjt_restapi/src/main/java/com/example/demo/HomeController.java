@@ -195,6 +195,11 @@ public class HomeController {
 			MembersDto mdto = mservice.getByuserId(id);
 //			map.put("usernm", mdto.getUserid().getUsernm());
 			if (mdto != null) {
+				if (mdto.getMemberid() == 0) {
+					map.put("memberid", "");
+				} else {
+					map.put("memberid", mdto.getMemberid());
+				}
 				if (mdto.getMemberimgnm() == "") {
 					map.put("memberimgnm", "");
 				} else {
