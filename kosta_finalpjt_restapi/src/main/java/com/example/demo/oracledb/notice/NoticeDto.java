@@ -19,4 +19,5 @@ public class NoticeDto {
 	private String content;
 	private String formtype;
 	private String writername;
+	
 }

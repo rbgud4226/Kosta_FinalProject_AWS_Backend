@@ -49,22 +49,24 @@ public class NoticeController {
 		return map;
 	}
 
-	@GetMapping("/notice/pagelist")
+	@GetMapping("/notice/allpagelist")
 	@ResponseBody
-	public Map pagelist(@Positive @RequestParam int page, @Positive @RequestParam int size) {
+	public Map pagelist(@Positive @RequestParam int page, @Positive @RequestParam int size, @RequestParam String formtype) {
+		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+		Map map = new HashMap();
+		List<NoticeDto> noticepage = noticeService.getAllNoticePage(page - 1, size, formtype);
+		map.put("list", noticepage);
+		return map;
+	}
+
+	@GetMapping("/notice/deptpagelist")
+	@ResponseBody
+	public Map deptpagelist(@Positive @RequestParam int page, @Positive @RequestParam int size) {
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		String dept = membersService.getByuserId(loginId).getDeptid().getDeptnm();
 		Map map = new HashMap();
-		Page<Notice> noticepage = noticeService.getAllNoticePage(page - 1, size);
-		List<Notice> list = noticepage.getContent();
-		List<Notice> fileterList = new ArrayList<>();
-		for (Notice n : list) {
-			if (n.getFormtype().equals(dept) || n.getFormtype().equals("전체")) {
-				fileterList.add(n);
-				map.put("list", fileterList);
-			}
-		}
-		map.put("list", fileterList);
+		List<NoticeDto> noticepage = noticeService.getDeptNoticePage(page - 1, size, dept);
+		map.put("list", noticepage);
 		return map;
 	}
 
@@ -76,17 +78,16 @@ public class NoticeController {
 		String dept = membersService.getByuserId(loginId).getDeptid().getDeptnm();
 		List<Notice> fileterList = new ArrayList<>();
 		Map<String, Object> map = new HashMap<>();
-		Page<Notice> noticepage;
+		List<NoticeDto> noticepage = new ArrayList<>();
 		if (title == null || title.isEmpty()) {
-			noticepage = noticeService.getAllNoticePage(page - 1, size);
 		} else {
 			noticepage = noticeService.getNoticePageTitle(page - 1, size, title);
 		}
-		List<Notice> list = noticepage.getContent();
 
-		for (Notice n : list) {
+		for (NoticeDto n : noticepage) {
 			if (n.getFormtype().equals(dept) || n.getFormtype().equals("전체")) {
-				fileterList.add(n);
+				fileterList.add(new Notice(n.getId(), n.getWriter(), n.getStartdt(), n.getEnddt(), n.getTitle(),
+						n.getContent(), n.getFormtype(), n.getWritername()));
 			}
 		}
 		map.put("tlist", fileterList);
@@ -101,16 +102,15 @@ public class NoticeController {
 		String dept = membersService.getByuserId(loginId).getDeptid().getDeptnm();
 		List<Notice> filterList = new ArrayList<>();
 		Map<String, Object> map = new HashMap<>();
-		Page<Notice> noticepage;
+		List<NoticeDto> noticepage = new ArrayList<>();
 		if (writer == null || writer.isEmpty()) {
-			noticepage = noticeService.getAllNoticePage(page - 1, size);
 		} else {
 			noticepage = noticeService.getNoticePageWriter(page - 1, size, writer);
 		}
-		List<Notice> list = noticepage.getContent();
-		for (Notice n : list) {
+		for (NoticeDto n : noticepage) {
 			if (n.getFormtype().equals(dept) || n.getFormtype().equals("전체")) {
-				filterList.add(n);
+				filterList.add(new Notice(n.getId(), n.getWriter(), n.getStartdt(), n.getEnddt(), n.getTitle(),
+						n.getContent(), n.getFormtype(), n.getWritername()));
 			}
 		}
 		map.put("wlist", filterList);

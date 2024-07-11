@@ -27,31 +27,51 @@ public class NoticeService {
 		return notice;
 	}
 
-	// 전체 공지 리스트 출력
-	public ArrayList<NoticeDto> getAllNotice() {
-		List<Notice> l = ndao.findAll();
-		ArrayList<NoticeDto> list = new ArrayList<>();
-		for (Notice n : l) {
-			list.add(new NoticeDto(n.getId(), n.getWriter(), n.getStartdt(), n.getEnddt(), n.getTitle(), n.getContent(),
-					n.getFormtype(), n.getWritername()));
+	// 페이지로 전체출력 n.getFormtype().equals("dept")
+	public List<NoticeDto> getAllNoticePage(int page, int size, String formtype) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		List<NoticeDto> filterAllpage = new ArrayList<>();
+		Page<Notice> npage = ndao.findByFormtype(formtype, pageRequest);
+		for(Notice n : npage) {
+			if(n.getFormtype().equals(formtype)){
+				filterAllpage.add(new NoticeDto(n.getId(), n.getWriter(), n.getStartdt(), n.getEnddt(), n.getTitle(), n.getContent(), n.getFormtype(), n.getWritername()));
+			}
 		}
-		return list;
+		return filterAllpage;
+	}
+	
+	//부서별
+	public List<NoticeDto> getDeptNoticePage(int page, int size, String dept) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		List<NoticeDto> filterDeptpage = new ArrayList<>();
+		Page<Notice> npage = ndao.findByFormtype(dept, pageRequest);
+		for(Notice n : npage) {
+			if(n.getFormtype().equals(dept)){
+				filterDeptpage.add(new NoticeDto(n.getId(), n.getWriter(), n.getStartdt(), n.getEnddt(), n.getTitle(), n.getContent(), n.getFormtype(), n.getWritername()));
+			}
+		}
+		return filterDeptpage;
+	}
+	
+	//이름 검색
+	public List<NoticeDto> getNoticePageTitle(int page, int size, String title) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		List<NoticeDto> filtertitlepage = new ArrayList<>();
+		Page<Notice> npage = ndao.findByTitleContaining(title, pageRequest);
+		for(Notice n : npage) {
+				filtertitlepage.add(new NoticeDto(n.getId(), n.getWriter(), n.getStartdt(), n.getEnddt(), n.getTitle(), n.getContent(), n.getFormtype(), n.getWritername()));
+		}
+		return filtertitlepage;
 	}
 
-	// 페이지로 전체출력
-	public Page<Notice> getAllNoticePage(int page, int size) {
+	public List<NoticeDto> getNoticePageWriter(int page, int size, String writer) {
 		PageRequest pageRequest = PageRequest.of(page, size);
-		return ndao.findAll(pageRequest);
+		List<NoticeDto> filterwriterpage = new ArrayList<>();
+		Page<Notice> npage = ndao.findByWriter_UsernmContaining(writer, pageRequest);
+		for(Notice n : npage) {
+			filterwriterpage.add(new NoticeDto(n.getId(), n.getWriter(), n.getStartdt(), n.getEnddt(), n.getTitle(), n.getContent(), n.getFormtype(), n.getWritername()));
 	}
-
-	public Page<Notice> getNoticePageTitle(int page, int size, String title) {
-		PageRequest pageRequest = PageRequest.of(page, size);
-		return ndao.findByTitleContaining(title, pageRequest);
-	}
-
-	public Page<Notice> getNoticePageWriter(int page, int size, String writer) {
-		PageRequest pageRequest = PageRequest.of(page, size);
-		return ndao.findByWriter_UsernmContaining(writer, pageRequest);
+	return filterwriterpage;
 	}
 
 	public void deleteNotice(Long noticeId) {

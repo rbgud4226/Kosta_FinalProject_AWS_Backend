@@ -46,7 +46,7 @@ public class Notice {
 	@PrePersist
 	public void setDate() {
 		Date now = new Date();
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy년MM월dd일 a HH시"); 
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd aHH시"); 
 		String strNowDate = simpleDateFormat.format(now); 
 		startdt = strNowDate;
 	}
