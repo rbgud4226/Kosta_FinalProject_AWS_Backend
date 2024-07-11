@@ -145,7 +145,7 @@ public class ChatRoomService {
 		}
 		return getOutMessage;
 	}
-	
+
 	public ArrayList<ChatRoomDto> getChatRoomsListByName(String name, String loginId) {
 		List<ChatRoom> l = chatRoomDao.findAll();
 		String partN = usersService.getById2(loginId).getUsernm();
@@ -155,10 +155,10 @@ public class ChatRoomService {
 			if (cr.getParticipants().contains(partN) && cr.getParticipants().contains(name) && cr.isStatus()) {
 				String[] pids = cr.getName().split("_");
 				String pid = "";
-				for(String s: pids) {
-					if(!s.equals(loginId)) {
+				for (String s : pids) {
+					if (!s.equals(loginId)) {
 						pid = s;
-						imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm(); 
+						imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm();
 					}
 				}
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
@@ -194,7 +194,14 @@ public class ChatRoomService {
 					}
 				}
 			} else {
-				imgL = "";
+				String[] pids = cr.getName().split("_");
+				String pid = "";
+				for (String s : pids) {
+					if (!s.equals(loginId)) {
+						pid = s;
+						imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm();
+					}
+				}
 			}
 			if (cr.isStatus() && cr.getName().contains(loginId)) {
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
@@ -225,8 +232,16 @@ public class ChatRoomService {
 			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
 					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL, null);
 			return cr;
+			
 		} else {
-			imgL = "";
+			String[] pids = c.getName().split("_");
+			String pid = "";
+			for (String s : pids) {
+				if (!s.equals(userId1)) {
+					pid = s;
+					imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm();
+				}
+			}
 			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
 					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL, null);
 			return cr;
