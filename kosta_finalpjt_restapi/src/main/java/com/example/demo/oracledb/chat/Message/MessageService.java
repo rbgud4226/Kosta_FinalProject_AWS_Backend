@@ -49,6 +49,8 @@ public class MessageService {
 				message.getFileRoot(), message.getPartid());
 		String mess = ms.getContent().replaceAll("(?:\r\n|\r|\n)", "<br/>");
 		ms.setContent(mess);
+		//
+		//
 		return messagedao.save(ms);
 	}
 

@@ -54,6 +54,8 @@ public class MessageController {
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
 			messagingTemplate.convertAndSend("/recent/update", roomId);
 		} else {
+			//
+			//
 			messageService.save(chatMessage, roomId);
 			ArrayList<MessageDto> list = messageService.getMessageByRoomId3(page-1,roomId);
 			messagingTemplate.convertAndSend("/room/" + roomId, list);
