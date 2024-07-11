@@ -5,11 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -45,25 +44,28 @@ public class DocxController {
 	// 보고서 작성양식
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@PostMapping("/addreport")
-	public Map<String,String> addreport(DocxDto d) {
+	public boolean addreport(DocxDto d) {
 		String senior = d.getSenior();
+		System.out.println("시니어 저장 형식 확인 ::::" + senior);
 		if (senior != null) {
 			int dkey = service.findByFormtypeDesc(d.getFormtype());
 			dkey += 1;
 			String[] s = d.getSenior().split(",");
+			
 			for (int j = 0; j < s.length; j++) {
+				System.out.println("스플릿 된 시니어 값 확인 :::::" + s[j]);
 				service.save(d, s[j], null, j, dkey);
 			}
 		}
-		Map<String , String> map = new HashMap();
-		map.put("redirect","/auth/docx/list");
-		return map;
+//		Map<String , String> map = new HashMap();
+//		map.put("redirect","/auth/docx/list");
+		return true;
 	}
 
 	// 휴가서류 작성양식
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@PostMapping("/addvacation")
-	public Map<String,String> addvacation(DocxDto d) {
+	public boolean addvacation(DocxDto d) {
 		int dkey = service.findByFormtypeDesc(d.getFormtype());
 		dkey += 1;
 		//문자열로 받아온 senior 를 콤마 기준으로 잘라서 배열에 담음
@@ -72,9 +74,9 @@ public class DocxController {
 		for (int j = 0; j < s.length; j++) {
 			service.save(d, s[j], null, j, dkey);
 		}
-		Map<String,String> map = new HashMap();
-		map.put("redirect", "/auth/docx/list");
-		return map;
+//		Map<String,String> map = new HashMap();
+//		map.put("redirect", "/auth/docx/list");
+		return true;
 	}
 
 	// 회의록 작성양식
