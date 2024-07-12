@@ -133,7 +133,8 @@ public class MembersController {
 		map.put("mlist", mlist);
 		return map;
 	}
-
+	
+	@ResponseBody
 	@GetMapping("/member/memberinfo/{id}")
 	public Map memberinfo(@PathVariable("id") String id) {
 		boolean flag = true;
@@ -152,10 +153,12 @@ public class MembersController {
 				mdto = mservice.getByuserId(id);
 				map.put("user", udto);
 				map.put("mdto", mdto);
+				System.out.println("=====error1");
 				if (mservice.getByuserId(id) != null) {
 					elist = eservice.getByMembers(mservice.getByuserId(id).getMemberid());
 				}
 				for (EduWorkExperienceInfoDto edto : elist) {
+					System.out.println("=====error2");
 					if (edto.getType() == 0) {
 						edulist.add(edto);
 					} else {
@@ -166,6 +169,7 @@ public class MembersController {
 				map.put("expwoklist", expwoklist);
 				ArrayList<DeptsDto> dlistAll = dservice.getAll();
 				for (DeptsDto ddto : dlistAll) {
+					System.out.println("=====error3");
 					if (ddto.getMgrid() != null && ddto.getMgrid().getMemberid() == mservice
 							.getByMemberId(ddto.getMgrid().getMemberid()).getMemberid()) {
 						mdto = mservice.getByMemberId(ddto.getMgrid().getMemberid());
@@ -185,6 +189,7 @@ public class MembersController {
 			flag = false;
 		}
 		map.put("flag", flag);
+		System.out.println("=====error4");
 		return map;
 	}
 //	@GetMapping("/member/memberedit")
@@ -317,12 +322,8 @@ public class MembersController {
 	public Map memberadd(MembersDto dto, EduWorkExperienceInfoDto edto) {
 		boolean flag = true;
 		MembersDto mdto = new MembersDto();
-		System.out.println("dto.getMemberid():" + dto.getMemberid());
-		System.out.println("dto.getMemberid():" + dto.getEmail());
-		System.out.println("edto.getMemberid():" + edto.getMemberid());
-		System.out.println("flag0:" + flag);
-		System.out.println("dto:" + dto);
 		try {
+			System.out.println("dto:" + dto);
 			if (dto.getHiredt() != null) {
 				mdto.setHiredt(dto.getHiredt());
 			}
@@ -330,9 +331,7 @@ public class MembersController {
 				mdto.setLeavedt(dto.getLeavedt());
 			}
 			mdto = mservice.save(dto);
-			System.out.println("flag1:" + flag);
 			if (!dto.getMemberimgf().isEmpty()) {
-				System.out.println("flag2:" + flag);
 				String oname = dto.getMemberimgf().getOriginalFilename();
 				String f1 = oname.substring(oname.lastIndexOf("."));
 				String f2 = oname.substring(oname.lastIndexOf(".") + 1, oname.length());
@@ -342,7 +341,6 @@ public class MembersController {
 				try {
 					dto.getMemberimgf().transferTo(newFile);
 					mdto.setMemberimgnm(newFile.getName());
-//				System.out.println(mdto.getMemberimgnm());
 					mservice.save(mdto);
 				} catch (IllegalStateException e) {
 					// TODO Auto-generated catch block
@@ -351,22 +349,18 @@ public class MembersController {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				System.out.println("mdto.getMemberid():" + mdto.getMemberid());
+				;
+				System.out.println("edto:" + edto);
 				EduWorkExperienceInfoDto eweidto = new EduWorkExperienceInfoDto();
 				eweidto.setMemberid(new Members(null, mdto.getMemberid(), null, null, null, null, null, null, null,
 						null, null, null, null));
 				eweidto = eservice.save(edto);
 			}
-			System.out.println("flag3:" + flag);
 		} catch (Exception e) {
 			flag = false;
-			System.out.println("flag4:" + flag);
 		}
 		Map map = new HashMap<>();
 		map.put("flag", flag);
-		System.out.println("flag5:" + flag);
-//		System.out.println(dto.getUserid().getId());
-//		map.put("id", dto.getUserid().getId());
 		return map;
 	}
 
