@@ -61,11 +61,15 @@ public class DocxService {
 			Docx d = docxlist.get(i);
 			d.setOrderloc(cnt);
 			dao.save(d);
+			System.out.println("문서 저장 완료됨 ===" + d);
 			if (i == docxlist.size() - 1) {
+				System.out.println("마지막 문서 처리중 ....");
 				if (d.getOrderloc() > d.getDocxorder()) {
+					System.out.println("orderloc이 docxorder보다 큼: orderloc = " + d.getOrderloc() + ", docxorder = " + d.getDocxorder());
 					for (Docx doc : docxlist) {
 						doc.setStatus(2);
 						dao.save(doc);
+						System.out.println("문서 상태 업데이트됨: " + doc);
 					}
 				}
 			}

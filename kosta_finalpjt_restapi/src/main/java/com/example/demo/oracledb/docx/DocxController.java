@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -164,11 +166,14 @@ public class DocxController {
 	
 	//보고서 상세페이지 출력
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@GetMapping("/getdocx")
-	public Map<String,Object> get(int formnum, int docxkey, String formtype, HttpServletRequest request) {
+	@PostMapping("/getdocx")
+	public Map<String,Object> get(@RequestParam(name="formnum")int formnum, @RequestParam(name="docxkey")int docxkey, @RequestParam(name="formtype")String formtype) {
+		System.out.println("문서 번호 출력 확인 : " +formnum);
 		boolean flag = false;
-		String token = tokenProvider.resolveToken(request);
-		String loginid = tokenProvider.getUserName(token);
+		
+//		String token = tokenProvider.resolveToken(request);
+//		String loginid = tokenProvider.getUserName(token);
+		String loginid= SecurityContextHolder.getContext().getAuthentication().getName();
 		List<DocxDto> l = service.findByDocxKeyTypeSenior(docxkey, formtype);
 		for (DocxDto d : l) {
 			if (d.getOrderloc() == d.getDocxorder() && d.getSenior().equals(loginid)) {
@@ -210,7 +215,7 @@ public class DocxController {
 	// 결재처리 메서드
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@PostMapping("/approve")
-	public Map<String,String> approveDocx(int docxkey, String formtype) {
+	public Map<String,String> approveDocx(@RequestParam int docxkey,@RequestParam String formtype) {
 		Map<String,String> map = new HashMap();
 		service.approveDocx(docxkey, formtype);
 		map.put("redirect","/auth/docx/list");
