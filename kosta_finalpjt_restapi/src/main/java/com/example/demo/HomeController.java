@@ -225,6 +225,7 @@ public class HomeController {
 			map.put("token", token);
 			map.put("type", type);
 			map.put("usernm", uservice.getById(id).getUsernm());
+			map.put("aprov", uservice.getById(id).getAprov());
 			System.out.println(token);
 			System.out.println(id);
 			System.out.println(type);
