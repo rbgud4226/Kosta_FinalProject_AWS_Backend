@@ -96,7 +96,6 @@ public class ChatRoomController {
 	@PostMapping("/chat/chatrooms/invite")
 	@ResponseBody
 	public Map inviteChatRoom(@RequestParam("userid[]") List<String> userid, String chatroomid, @RequestParam int page) {
-		System.out.println("요청은 오냐?");
 		String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 		Map map = new HashMap();
 		boolean flag = false;
