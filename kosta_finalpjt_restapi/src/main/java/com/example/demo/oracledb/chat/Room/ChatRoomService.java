@@ -62,10 +62,6 @@ public class ChatRoomService {
 		String name = createChatRoomName(userIds);
 		ChatRoom chatRoom = chatRoomDao.findByName(name);
 		if (chatRoom != null) {
-			if (!chatRoom.isStatus()) {
-				chatRoom.setStatus(true);
-				chatRoomDao.save(chatRoom);
-			}
 			if (!chatRoom.getRoomType().equals("PERSONAL") && !chatRoom.getRoomType().equals("PRIVATE")) {
 				chatRoom = createNewChatRoom(userIds, name);
 			}
@@ -153,12 +149,30 @@ public class ChatRoomService {
 		String imgL = "";
 		for (ChatRoom cr : l) {
 			if (cr.getParticipants().contains(partN) && cr.getParticipants().contains(name) && cr.isStatus()) {
-				String[] pids = cr.getName().split("_");
-				String pid = "";
-				for (String s : pids) {
-					if (!s.equals(loginId)) {
-						pid = s;
-						imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm();
+				if (cr.getRoomType().equals("PERSONAL")) {
+					String[] pids = cr.getName().split("_");
+					String pid = "";
+					for (String s : pids) {
+						if (!s.equals(loginId)) {
+							pid = s;
+							imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm();
+						}
+					}
+				} else if (cr.getRoomType().equals("PRIVATE")) {
+					if (memberService.getByuserId(loginId) == null) {
+						imgL = "";
+					} else {
+						imgL = memberService.getByuserId(loginId).getMemberimgnm();
+					}
+
+				} else {
+					String[] pids = cr.getName().split("_");
+					String pid = "";
+					for (String s : pids) {
+						if (!s.equals(loginId)) {
+							pid = s;
+							imgL = memberService.getByuserId(usersService.getById2(pid).getId()).getMemberimgnm();
+						}
 					}
 				}
 				list.add(new ChatRoomDto(cr.getChatroomid(), cr.getName(), cr.getChatRoomNames(), cr.getRoomType(),
@@ -173,7 +187,7 @@ public class ChatRoomService {
 		ArrayList<ChatRoomDto> list = new ArrayList<>();
 		for (ChatRoom cr : l) {
 			String imgL = "";
-			if (cr.getRoomType().equals("PERSONAL") || cr.getRoomType().equals("PRIVATE")) {
+			if (cr.getRoomType().equals("PERSONAL")) {
 				ArrayList<String> nameList = new ArrayList<>();
 				for (String name : cr.getName().split("_")) {
 					if (!name.equals(loginId)) {
@@ -193,7 +207,18 @@ public class ChatRoomService {
 						}
 					}
 				}
-			} else {
+			} else if (cr.getRoomType().equals("PRIVATE")) {
+				String name = cr.getName();
+				if (name.equals(loginId)) {
+					if (memberService.getByuserId(name) == null) {
+						imgL = "";
+					} else {
+						imgL = memberService.getByuserId(name).getMemberimgnm();
+					}
+				}
+			}
+
+			else {
 				String[] pids = cr.getName().split("_");
 				String pid = "";
 				for (String s : pids) {
@@ -214,7 +239,7 @@ public class ChatRoomService {
 	public ChatRoomDto getChatRoomsByChatRoomId(String chatroomid, String userId1) {
 		ChatRoom c = chatRoomDao.findByChatroomid(chatroomid);
 		String imgL = "";
-		if (c.getRoomType().equals("PERSONAL") || c.getRoomType().equals("PRIVATE")) {
+		if (c.getRoomType().equals("PERSONAL")) {
 			ArrayList<String> nameL = new ArrayList<>();
 			for (String l : c.getName().split("_")) {
 				nameL.add(l);
@@ -232,8 +257,28 @@ public class ChatRoomService {
 			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
 					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL, null);
 			return cr;
-			
-		} else {
+
+		} else if (c.getRoomType().equals("PRIVATE")) {
+			ArrayList<String> nameL = new ArrayList<>();
+			for (String l : c.getName().split("_")) {
+				nameL.add(l);
+			}
+			for (String l : nameL) {
+				if (l.equals(userId1)) {
+					String userid = usersService.getById2(l).getId();
+					if (memberService.getByuserId(userid) == null) {
+						imgL = "";
+					} else {
+						imgL = memberService.getByuserId(userid).getMemberimgnm();
+					}
+				}
+			}
+			ChatRoomDto cr = new ChatRoomDto(c.getChatroomid(), c.getName(), c.getChatRoomNames(), c.getRoomType(),
+					c.getChats(), c.getRoomUsers(), c.isStatus(), null, c.getParticipants(), imgL, null);
+			return cr;
+		}
+
+		else {
 			String[] pids = c.getName().split("_");
 			String pid = "";
 			for (String s : pids) {
@@ -283,7 +328,7 @@ public class ChatRoomService {
 			if (usersDao.findById(s) != null) {
 				String[] userIds = chatRoom.getName().split("_");
 				String[] partis = chatRoom.getParticipants().split("_");
-				partN = usersService.getById2(s).getUsernm(); // 이름
+				partN = usersService.getById2(s).getUsernm(); 
 				ArrayList<String> userIdList = new ArrayList<>(Arrays.asList(userIds));
 				List<String> partisList = new ArrayList<>(Arrays.asList(partis));
 				if (chatRoom.getRoomType().equals("PERSONAL") && userIds.length == 1) {
@@ -369,8 +414,6 @@ public class ChatRoomService {
 
 	// controller createChatRoom
 	public ModelMap createChatRoomByUserList(List<String> userid, String loginId) {
-		System.out.println(userid.get(0));
-		System.out.println(loginId);
 		if (!userid.contains(loginId)) {
 			userid.add(loginId);
 		}
@@ -433,11 +476,15 @@ public class ChatRoomService {
 			}
 		}
 		cr.setChatRoomNames(roomNames);
-
 		String[] nameParts = cr.getName().split("_");
-		List<String> memberNames = Arrays.stream(nameParts)
-				.filter(name -> !name.equals(cr.getChatRoomNames().get(0).getHost()))
-				.map(name -> usersService.getById(name).getUsernm()).collect(Collectors.toList());
+		List<String> memberNames = new ArrayList<>();
+
+		for (String name : nameParts) {
+			if (!name.equals(cr.getChatRoomNames().get(0).getHost())) {
+				String userName = usersService.getById(name).getUsernm();
+				memberNames.add(userName);
+			}
+		}
 		cr.setMemberNames(memberNames);
 		return cr;
 	}
