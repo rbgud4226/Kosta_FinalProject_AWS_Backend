@@ -192,10 +192,40 @@ public class HomeController {
 			String token = myTokenProvider.getToken(uservice.getById(id)); // >>토큰 생성시 dto 필요
 			String type = myTokenProvider.getRoles(token);
 
+			MembersDto mdto = mservice.getByuserId(id);
+//			map.put("usernm", mdto.getUserid().getUsernm());
+			if (mdto != null) {
+				if (mdto.getMemberid() == 0) {
+					map.put("memberid", "");
+				} else {
+					map.put("memberid", mdto.getMemberid());
+				}
+				if (mdto.getMemberimgnm() == "") {
+					map.put("memberimgnm", "");
+				} else {
+					map.put("memberimgnm", mdto.getMemberimgnm());
+				}
+				if (mdto.getDeptid() == null) {
+					map.put("deptnm", "미등록 상태");
+				} else {
+					map.put("deptnm", mdto.getDeptid().getDeptnm());
+					if (mdto.getDeptid().getMgrid() != null
+							&& mdto.getDeptid().getMgrid().getMemberid() == mdto.getMemberid()) {
+						map.put("mgr_deptid", mdto.getDeptid().getDeptid());
+					}
+				}
+				if (mdto.getJoblvid() == null) {
+					map.put("joblvnm", "미등록 상태");
+				} else {
+					map.put("joblvnm", mdto.getJoblvid().getJoblvnm());
+				}
+			}
+
 			map.put("id", id);
 			map.put("token", token);
 			map.put("type", type);
 			map.put("usernm", uservice.getById(id).getUsernm());
+			map.put("aprov", uservice.getById(id).getAprov());
 			System.out.println(token);
 			System.out.println(id);
 			System.out.println(type);

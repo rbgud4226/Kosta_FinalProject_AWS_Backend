@@ -1,5 +1,9 @@
 package com.example.demo.oracledb.chat.Message;
 
+
+
+import java.sql.Timestamp;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -39,7 +43,7 @@ public class Message {
 
 	@Column(length = 2000)
 	private String content;
-	private String sendDate;
+	private Timestamp sendDate;
 	private String sender;
 	private String type;
 	private String fileName;
@@ -47,7 +51,7 @@ public class Message {
 	private String fileRoot;
 	private String partid;
 
-	public Message(Long id, ChatRoom room, String sendDate, String sender, String type, String partid) {
+	public Message(Long id, ChatRoom room, Timestamp sendDate, String sender, String type, String partid) {
 		super();
 		this.id = id;
 		this.room = room;

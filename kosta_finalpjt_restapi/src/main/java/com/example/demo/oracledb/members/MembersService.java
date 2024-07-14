@@ -128,7 +128,7 @@ public class MembersService {
 	}
 
 	public MembersDto getByuserId(String userid) {
-		Members m = mdao.findByUserid(new Users(userid, "", "", "", 0, null));
+		Members m = mdao.findByUserid(new Users(userid, "", "", "", 1, null));
 		if (m == null) {
 			return null;
 		}
@@ -186,9 +186,11 @@ public class MembersService {
 		for (Depts d : dlist) {
 			List<Members> l = mdao.findByDeptid(d);
 			for (Members m : l) {
-				list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
-						m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
-						m.getJoblvid(), m.getMgrid(), null, null));
+				if (m.getUserid().getAprov() == 1) {
+					list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
+							m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
+							m.getJoblvid(), m.getMgrid(), null, null));
+				}
 			}
 
 		}
@@ -196,7 +198,7 @@ public class MembersService {
 	}
 
 	public ArrayList<MembersDto> getByUsersLike(String usernm) {
-		ArrayList<Users> ulist = udao.findByUsernmLike(usernm);
+		ArrayList<Users> ulist = udao.findByUsernmLike("%" + usernm + "%");
 		ArrayList<MembersDto> list = new ArrayList<>();
 		for (Users u : ulist) {
 			Members m = mdao.findByUserid(u);
@@ -214,9 +216,11 @@ public class MembersService {
 		for (Joblvs j : jlist) {
 			List<Members> l = mdao.findByJoblvid(j);
 			for (Members m : l) {
-				list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
-						m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
-						m.getJoblvid(), m.getMgrid(), null, null));
+				if (m.getUserid().getAprov() == 1) {
+					list.add(new MembersDto(m.getUserid(), m.getMemberid(), m.getBirthdt(), m.getEmail(), m.getCpnum(),
+							m.getAddress(), m.getMemberimgnm(), m.getHiredt(), m.getLeavedt(), m.getDeptid(),
+							m.getJoblvid(), m.getMgrid(), null, null));
+				}
 			}
 		}
 		return list;

@@ -1,26 +1,31 @@
 package com.example.demo.oracledb.charts;
 
+import com.example.demo.oracledb.auth.MyTokenProvider;
 import com.example.demo.oracledb.users.Users;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@Controller
-@RequestMapping("/auth/chart")
+@RestController
+@CrossOrigin(origins = "*")
+@RequestMapping("/chart")
 public class ChartsController {
   @Autowired
   private ChartsService service;
 
+  @Autowired
+  private MyTokenProvider myTokenProvider;
+
   @PostMapping("/add")
-  public String addChart(ChartsDto dto){
-    ChartsDto cd = dto;
+  public ResponseEntity<String> addChart(@RequestParam int taskid, @RequestParam String title, @RequestParam String chartResource, @RequestParam String st,
+                                         @RequestParam String ed, @RequestParam int percent, @RequestParam String users){
+    ChartsDto cd = new ChartsDto(new Users(users, null, null, null, 0, null),
+        taskid, chartResource, title, st, ed, percent, null, "yes");
     if(cd.getEd().isEmpty()){
       cd.setEd(cd.getSt());
     }
@@ -28,65 +33,88 @@ public class ChartsController {
       cd.setEd(cd.getSt());
     }
     service.save(cd);
-    return "redirect:/index_emp";
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
-  @ResponseBody
   @PostMapping("/checkbox")
   @Transactional
-  public void editChart(@RequestParam String taskid, @RequestParam String charstatus){
+  public ResponseEntity<String> editChart(@RequestParam String taskid, @RequestParam String charstatus){
     ChartsDto cdto = service.get(Integer.parseInt(taskid));
     cdto.setChartStatus(charstatus);
     service.save(cdto);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @GetMapping("/gantt")
-  public String ganttForm(){
-    return "auth/charts/gantt";
+  public ResponseEntity<String> ganttForm(){
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @GetMapping("/calendar")
-  public String calendarForm(){
-    return "auth/charts/calendar";
+  public ResponseEntity<String> calendarForm(){
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @GetMapping("/list")
+  public ResponseEntity<List<ChartsDto>> list(@RequestParam String userid){
+    System.out.println("userid 받아보기 : " + userid);
+    List<ChartsDto> list = service.getbyUsers(userid);
+    System.out.println("list 호출됨");
+    return new ResponseEntity<>(list, HttpStatus.OK);
   }
 
   @GetMapping("/data")
-  @ResponseBody
-  public ArrayList<ChartsDto> data(HttpSession session){
-    String loginid = (String) session.getAttribute("loginId");
-    ArrayList<ChartsDto> list = service.ganttList(loginid);
-    return list;
+  public ResponseEntity<List<ChartsDto>> data(HttpServletRequest req){
+    String token = myTokenProvider.resolveToken(req);
+    String id = myTokenProvider.getUserName(token);
+    List<ChartsDto> list = service.ganttList(id);
+    return new ResponseEntity<>(list, HttpStatus.OK);
   }
 
   @GetMapping("/cdata")
-  @ResponseBody
-  public ArrayList<Map> Cdata(){
-    ArrayList<Map> list = new ArrayList<>();
-    ArrayList<ChartsDto> l = service.getAll();
+  public ResponseEntity<List<Map<String, Object>>> Cdata(HttpServletRequest req){
+    String token = myTokenProvider.resolveToken(req);
+    String id = myTokenProvider.getUserName(token);
+    List<Map<String, Object>> list = new ArrayList<>();
+    List<ChartsDto> l = service.getbyUsers(id);
     for(ChartsDto c : l){
       Map map = new HashMap<>();
       map.put("title", c.getTitle());
       map.put("start", c.getSt());
       map.put("end", c.getEd());
       list.add(map);
-
     }
-    return list;
+    return new ResponseEntity<>(list, HttpStatus.OK);
   }
 
-  @RequestMapping("/del")
-  public String delbyid(int id){
+  @DeleteMapping("/del")
+  public ResponseEntity<Void> delbyid(int id){
     service.del(id);
-    return "redirect:/index_emp";
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @PostMapping("/share")
-  public String ShareChart(@RequestParam(name = "userid", required = false) List<String> userids, @RequestParam(name="taskid")int taskid){
-    ChartsDto dto = service.get(taskid);
-    for (String userid : userids) {
+  public ResponseEntity<Void> ShareChart(@RequestBody ChartShare share){
+    System.out.println(share.getTaskid());
+    ChartsDto dto = service.get(share.getTaskid());
+    for (String userid : share.getUserids()) {
       service.save(new ChartsDto(new Users(userid, null, null, null, 0, null), 0, dto.getChartResource(), dto.getTitle(),
           dto.getSt(), dto.getEd(), dto.getPercent(), dto.getDependencies(), dto.getChartStatus()));
+      System.out.println("공유 확인 : " + userid );
     }
-    return "redirect:/index_emp";
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @PostMapping("/updateCheckbox")
+  public ResponseEntity<Void> UpdateCheckbox(@RequestParam int taskid, @RequestParam String check){
+    ChartsDto dto = service.get(taskid);
+    if(check.equals("yes")){
+      service.save(new ChartsDto(dto.getUsers(), taskid, dto.getChartResource(), dto.getTitle(),
+          dto.getSt(), dto.getEd(), dto.getPercent(), dto.getDependencies(), "no"));
+    } else {
+      service.save(new ChartsDto(dto.getUsers(), taskid, dto.getChartResource(), dto.getTitle(),
+          dto.getSt(), dto.getEd(), dto.getPercent(), dto.getDependencies(), "yes"));
+    }
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }

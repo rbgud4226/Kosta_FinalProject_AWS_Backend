@@ -13,12 +13,14 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -33,9 +35,7 @@ import com.example.demo.oracledb.users.Users;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.http.HttpSession;
-
-
+@CrossOrigin(origins = "*")
 @Controller
 public class WorkInOutRecordController {
   @Autowired
@@ -56,13 +56,16 @@ public class WorkInOutRecordController {
   //출퇴근 기록 페이지로 이동하기
   @ResponseBody
   @GetMapping("/auth/record/my")
-  public String myrecord(HttpSession session, ModelMap map) {
-    String loginid = (String) session.getAttribute("loginId");
+  public Map myrecord() {
+	Map map = new HashMap<>();
+	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String loginid =  auth.getName();
+    System.out.println("loginid:" + loginid);
     MembersDto md = mservice.getByuserId(loginid);
-    Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
-    if (m == null) {
-      return "error";
+    if (md == null) {
+    	return null;
     }
+    Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
     //출근기록x
     boolean flag = false;
     boolean out = false;
@@ -91,13 +94,14 @@ public class WorkInOutRecordController {
     map.put("mynum", m.getMemberid());
     //퇴근 기록 반환
 	map.put("out", out);
-    return "record/my";
+    return map;
   }
 
   //출근하기
   @ResponseBody
-  @PostMapping("/in")
+  @PostMapping("/record/in")
   public Map workin(String Members) {
+	System.out.println(Members);
     MembersDto md = mservice.getByuserId(Members);
     Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
     String type = "출근";
@@ -111,7 +115,7 @@ public class WorkInOutRecordController {
       type = "지각";
     }
     WorkInOutRecordDto d = service.save(new WorkInOutRecordDto(0, m, null, null, null, null, null, type));
-    System.out.println(d);
+
     Map map = new HashMap<>();
     map.put("num", d.getDaynum());
     map.put("flag", "true");
@@ -124,6 +128,7 @@ public class WorkInOutRecordController {
   @ResponseBody
   @PostMapping("/out")
   public void workout(String Members, int memberid) {
+	System.out.println("mem: "+Members+" /id:"+memberid);
     WorkInOutRecordDto w = service.select(memberid);
     String type = "정상근무";
 
@@ -198,6 +203,9 @@ public class WorkInOutRecordController {
   @GetMapping("/getmonth")
   public Map myrecord(String Members, int count) {
     MembersDto md = mservice.getByuserId(Members);
+    if(md == null ) {
+    	return null;
+    }
     Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
     // 현재 날짜 가져오기
     LocalDate currentDate = LocalDate.now();
@@ -217,17 +225,21 @@ public class WorkInOutRecordController {
   }
 
   //부서 근태 부서장 페이지 이동
+  @ResponseBody
   @GetMapping("/auth/record/dept")
-  public ModelAndView deptList(int dept) {
-    ModelAndView mav = new ModelAndView("record/dept");
-    mav.addObject("record",deptLeader(deptRecord(dept, 0)));
-    mav.addObject("list", deptRecord(dept, 0));
-    return mav;
+  public Map deptList(int dept) {
+	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	String loginid =  auth.getName();
+	DeptsDto d = dservice.getByDeptId(dept);
+	Map map = new HashMap<>();
+	map.put("record",deptLeader(deptRecord(dept, 0)));
+	map.put("list", deptRecord(dept, 0));
+    return map;
   }
 
   //관리자(부서별 데이터 가져오기)
   @ResponseBody
-  @GetMapping("/auth/record/list")
+  @GetMapping("/record/list")
   public ArrayList<ChartDeptMember> deptRecord(int dept, int cnt) {
     // 현재 날짜 가져오기
     LocalDate currentDate = LocalDate.now();
@@ -299,8 +311,11 @@ public class WorkInOutRecordController {
   }
   
   //관리자용 페이지(부서별 근무시간 통계 자료)
-  @GetMapping("/admin")
-  public String admin(Model model) {
+  @ResponseBody
+  @GetMapping("/auth/record/admin")
+  public Map admin(Model model) {
+	  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	  String loginid =  auth.getName();
       LocalDate currentDate = LocalDate.now();
       int currentYear = currentDate.getYear();
       
@@ -314,16 +329,8 @@ public class WorkInOutRecordController {
           ArrayList<DeptsYearWorkData> deptList = service.deptYearData(currentYear, d.getDeptid());
           adminLineData.put(d.getDeptnm(), deptList);
       }
-      
-      // JSON 데이터를 문자열로 변환
-      try {
-          String jsonData = mapper.writeValueAsString(adminLineData);
-          model.addAttribute("LineData", jsonData);
-      } catch (JsonProcessingException e) {
-          e.printStackTrace();
-      }
-      
-      return "record/admin";
+            
+      return adminLineData;
   }
   
   @ResponseBody
@@ -349,99 +356,99 @@ public class WorkInOutRecordController {
 	    return map;
   }
   
-  
-  @PostMapping("/member")
-  public void test(String members, String date1, String date2) {
-    LocalDate startDate = LocalDate.parse(date1);
-    LocalDate endDate = LocalDate.parse(date2);
-    //멤버 정보
-    MembersDto md = mservice.getByuserId(members);
-    Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
-    
-    //주말 제외 저장하기
-    LocalDate currentDate = startDate;
-    while (!currentDate.isAfter(endDate)) {
-      if (!isWeekend(currentDate)) {
-        String dayOfWeek = currentDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
-        String type = "정상근무";
-        
-        // 출근 시간 범위 설정 (8:30 ~ 9:10)
-        LocalTime startTimeMin = LocalTime.of(8, 30);
-        LocalTime startTimeMax = LocalTime.of(9, 10);
-
-        // 퇴근 시간 범위 설정 (18:00 ~ 20:00)
-        LocalTime endTimeMin = LocalTime.of(17, 30);
-        LocalTime endTimeMax = LocalTime.of(21, 0);
-
-        // 랜덤한 출근 시간 생성 (8:30 이상, 9:10 미만)
-        LocalTime actualArrivalTime = generateRandomTime(startTimeMin, startTimeMax);
-
-        // 출근 시간 출력
-        System.out.println("출근 시간: " + actualArrivalTime);
-
-        // 출근 시간과 비교하여 지각 여부 판단
-        if (actualArrivalTime.isAfter(LocalTime.of(9, 0))) {
-        	type = "지각";
-        }
-
-        // 랜덤한 퇴근 시간 생성 (18:00 이상, 20:00 미만)
-        LocalTime actualDepartureTime = generateRandomTime(endTimeMin, endTimeMax);
-        
-        
-        // 퇴근 시간 출력
-        System.out.println("퇴근 시간: " + actualDepartureTime);
-        
-        LocalTime targetTime = LocalTime.of(18, 30);
-        LocalTime targetTime2 = LocalTime.of(17, 50);
-        if(type.equals("정상근무")) {
-            if (actualDepartureTime.isAfter(targetTime)) {
-                type = "추가근무";
-            } else if (actualDepartureTime.isBefore(targetTime2)) {
-                type = "조기퇴근";
-           }
-        }
-
-        // 출근 시간과 퇴근 시간의 차이 계산 및 출력
-
-        Duration duration = Duration.between(actualArrivalTime, actualDepartureTime);
-        
-        // 분 단위로 계산된 근무 시간을 HH:mm 형태로 변환
-        long minutesWorked = duration.toMinutes();
-        long hours = minutesWorked / 60;
-        if(hours>9) {
-        	hours--;
-        }
-        long minutes = minutesWorked % 60;
-        String formattedTime = String.format("%02d:%02d", hours, minutes);
-
-        // 실제 근무 시간 출력
-        System.out.println("실제 근무 시간: " + formattedTime);
-
-        // 결과 출력
-        System.out.println("출근 상태: " + type);
-        
-        
-        service.save(new WorkInOutRecordDto(0, m, dayOfWeek, currentDate, String.format("%02d:%02d",actualArrivalTime.getHour(), actualArrivalTime.getMinute()),
-        		String.format("%02d:%02d",actualDepartureTime.getHour(), actualDepartureTime.getMinute()), formattedTime, type));
-      }
-      currentDate = currentDate.plusDays(1);
-    }
-
-  }
-//랜덤한 시간 생성 메서드
-  private static LocalTime generateRandomTime(LocalTime minTime, LocalTime maxTime) {
-	  
-	   // 시작 시간과 종료 시간 사이의 분 단위로 변환
-      long startMinutes = minTime.toSecondOfDay() / 60;
-      long endMinutes = maxTime.toSecondOfDay() / 60;
-
-      // 랜덤한 분 값 생성
-      long randomMinutes = ThreadLocalRandom.current().nextLong(startMinutes, endMinutes + 1);
-
-      // 생성된 분 값을 LocalTime으로 변환
-      LocalTime randomTime = minTime.plus(randomMinutes - startMinutes, ChronoUnit.MINUTES);
-      return randomTime;
-  }
-  
+//  
+//  @PostMapping("/member")
+//  public void test(String members, String date1, String date2) {
+//    LocalDate startDate = LocalDate.parse(date1);
+//    LocalDate endDate = LocalDate.parse(date2);
+//    //멤버 정보
+//    MembersDto md = mservice.getByuserId(members);
+//    Members m = new Members(md.getUserid(), md.getMemberid(), md.getBirthdt(), md.getEmail(), md.getCpnum(), md.getAddress(), md.getMemberimgnm(), md.getHiredt(), md.getLeavedt(), md.getDeptid(), md.getJoblvid(), md.getMgrid(), null);
+//    
+//    //주말 제외 저장하기
+//    LocalDate currentDate = startDate;
+//    while (!currentDate.isAfter(endDate)) {
+//      if (!isWeekend(currentDate)) {
+//        String dayOfWeek = currentDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
+//        String type = "정상근무";
+//        
+//        // 출근 시간 범위 설정 (8:30 ~ 9:10)
+//        LocalTime startTimeMin = LocalTime.of(8, 30);
+//        LocalTime startTimeMax = LocalTime.of(9, 10);
+//
+//        // 퇴근 시간 범위 설정 (18:00 ~ 20:00)
+//        LocalTime endTimeMin = LocalTime.of(17, 30);
+//        LocalTime endTimeMax = LocalTime.of(21, 0);
+//
+//        // 랜덤한 출근 시간 생성 (8:30 이상, 9:10 미만)
+//        LocalTime actualArrivalTime = generateRandomTime(startTimeMin, startTimeMax);
+//
+//        // 출근 시간 출력
+//        System.out.println("출근 시간: " + actualArrivalTime);
+//
+//        // 출근 시간과 비교하여 지각 여부 판단
+//        if (actualArrivalTime.isAfter(LocalTime.of(9, 0))) {
+//        	type = "지각";
+//        }
+//
+//        // 랜덤한 퇴근 시간 생성 (18:00 이상, 20:00 미만)
+//        LocalTime actualDepartureTime = generateRandomTime(endTimeMin, endTimeMax);
+//        
+//        
+//        // 퇴근 시간 출력
+//        System.out.println("퇴근 시간: " + actualDepartureTime);
+//        
+//        LocalTime targetTime = LocalTime.of(18, 30);
+//        LocalTime targetTime2 = LocalTime.of(17, 50);
+//        if(type.equals("정상근무")) {
+//            if (actualDepartureTime.isAfter(targetTime)) {
+//                type = "추가근무";
+//            } else if (actualDepartureTime.isBefore(targetTime2)) {
+//                type = "조기퇴근";
+//           }
+//        }
+//
+//        // 출근 시간과 퇴근 시간의 차이 계산 및 출력
+//
+//        Duration duration = Duration.between(actualArrivalTime, actualDepartureTime);
+//        
+//        // 분 단위로 계산된 근무 시간을 HH:mm 형태로 변환
+//        long minutesWorked = duration.toMinutes();
+//        long hours = minutesWorked / 60;
+//        if(hours>9) {
+//        	hours--;
+//        }
+//        long minutes = minutesWorked % 60;
+//        String formattedTime = String.format("%02d:%02d", hours, minutes);
+//
+//        // 실제 근무 시간 출력
+//        System.out.println("실제 근무 시간: " + formattedTime);
+//
+//        // 결과 출력
+//        System.out.println("출근 상태: " + type);
+//        
+//        
+//        service.save(new WorkInOutRecordDto(0, m, dayOfWeek, currentDate, String.format("%02d:%02d",actualArrivalTime.getHour(), actualArrivalTime.getMinute()),
+//        		String.format("%02d:%02d",actualDepartureTime.getHour(), actualDepartureTime.getMinute()), formattedTime, type));
+//      }
+//      currentDate = currentDate.plusDays(1);
+//    }
+//
+//  }
+////랜덤한 시간 생성 메서드
+//  private static LocalTime generateRandomTime(LocalTime minTime, LocalTime maxTime) {
+//	  
+//	   // 시작 시간과 종료 시간 사이의 분 단위로 변환
+//      long startMinutes = minTime.toSecondOfDay() / 60;
+//      long endMinutes = maxTime.toSecondOfDay() / 60;
+//
+//      // 랜덤한 분 값 생성
+//      long randomMinutes = ThreadLocalRandom.current().nextLong(startMinutes, endMinutes + 1);
+//
+//      // 생성된 분 값을 LocalTime으로 변환
+//      LocalTime randomTime = minTime.plus(randomMinutes - startMinutes, ChronoUnit.MINUTES);
+//      return randomTime;
+//  }
+//  
   
 }

@@ -5,18 +5,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.oracledb.members.MembersDto;
 import com.example.demo.oracledb.members.MembersService;
+import com.example.demo.oracledb.users.Users;
 
-@Controller
+@RestController
+@CrossOrigin(origins = "*")
 public class DeptsController {
 
 	@Autowired
@@ -29,18 +32,24 @@ public class DeptsController {
 	private JoblvsService jservice;
 
 	@GetMapping("/corp/deptlist")
-	public String deptlist(ModelMap map) {
-		ArrayList<DeptsDto> dlist = dservice.getAll();
-		map.addAttribute("dlist", dlist);
-//		System.out.println(dlist.get(0).getMgrid().getMemberid());
-//		System.out.println(dlist.get(0).getMgrid().getUserid());
-		return "corp/deptlist";
+	public Map deptlist() {
+		boolean flag = true;
+		ArrayList<DeptsDto> dlist = new ArrayList<DeptsDto>();
+		try {
+			dlist = dservice.getAll();
+		} catch (Exception e) {
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("dlist", dlist);
+		return map;
 	}
 
-	@GetMapping("/admin/corp/deptadd")
-	public String deptaddform() {
-		return "corp/deptadd";
-	}
+//	@GetMapping("/admin/corp/deptadd")
+//	public String deptaddform() {
+//		return "corp/deptadd";
+//	}
 
 //	@PostMapping("/admin/corp/deptadd")
 //	public String deptadd(DeptsDto dto) {
@@ -49,21 +58,37 @@ public class DeptsController {
 //	}
 
 	@PostMapping("/admin/corp/deptadd")
-	public String deptadd(DeptsDto dto, Model model) {
-		// Process and save the department using your service
-		dservice.save(dto); // Assuming dservice is your service class
-
-		model.addAttribute("message", "부서가 추가되었습니다."); // Add success message to model
-
-		// Return the view name where you want to redirect after successful addition
-		return "redirect:/corp/deptlist"; // Redirect to department list page
+	public Map deptadd(DeptsDto dto) {
+		System.out.println(dto);
+		boolean flag = true;
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
+				dservice.save(dto);
+			} else {
+				flag = false;
+			}
+		} catch (Exception e) {
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("message", "부서가 추가되었습니다.");
+		return map; // Redirect to department list page
 	}
 
 	//
 	@GetMapping("/admin/corp/depttestadd")
-	public String depttestadd() {
-		dservice.dummyDeptsave();
-		return "redirect:/corp/deptlist";
+	public Map depttestadd() {
+		boolean flag = true;
+		try {
+			dservice.dummyDeptsave();
+		} catch (Exception e) {
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+		return map;
 	}
 
 //	@GetMapping("/corp/deptinfo")
@@ -75,39 +100,69 @@ public class DeptsController {
 	@ResponseBody
 	@GetMapping("/corp/deptinfo")
 	public Map deptinfo(int deptid) {
+		boolean flag = true;
 		Map map = new HashMap();
 		try {
 			map.put("d", dservice.getByDeptId(deptid));
 			map.put("mlist", mservice.getAll());
 		} catch (Exception e) {
 //			map.put("error", "Failed to fetch dept details.");
-			e.printStackTrace(); // or log the exception
+			flag = false;
 		}
+		map.put("flag", flag);
 		return map;
 	}
 
 	@PostMapping("/admin/corp/deptedit")
-	public String deptedit(DeptsDto dto) {
-		dservice.save(dto);
-		return "redirect:/corp/deptinfo?deptid=" + dto.getDeptid();
+	public Map deptedit(DeptsDto dto) {
+		boolean flag = true;
+		try {
+			dservice.save(dto);
+		} catch (Exception e) {
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+		return map;
 	}
 
 	@PostMapping("/corp/getdeptby")
-	public ModelAndView getdeptby(String val, int type) {
+	public Map getdeptby(String val, int type) {
+		boolean flag = true;
 		ArrayList<DeptsDto> dlist = new ArrayList<DeptsDto>();
-		if (type == 1) {
-			dlist = dservice.getByDeptNm(val);
-		} else if (type == 2) {
-			MembersDto mdto = mservice.getByuserId(val);
-			dlist = dservice.getByMgrId(mdto.getMemberid());
+		try {
+			if (type == 1) {
+				System.out.println("val:" + val);
+				dlist = dservice.getByDeptNm(val);
+				System.out.println("dlist:" + dlist);
+			} else if (type == 2) {
+				System.out.println("===error1===");
+				System.out.println("val:" + val);
+				if (!val.isEmpty()) {
+					ArrayList<MembersDto> mlist = mservice.getByUsersLike(val);
+					for (MembersDto mdto : mlist) {
+						ArrayList<DeptsDto> mgriddlist = dservice.getByMgrId(mdto.getMemberid());
+						for (DeptsDto ddto : mgriddlist) {
+							dlist.add(ddto);
+						}
+					}
+				} else {
+					dlist = dservice.getByDeptNm(val);
+				}
+
+			}
+		} catch (Exception e) {
+			System.out.println("===error1===");
+			flag = false;
 		}
-		ModelAndView mav = new ModelAndView("corp/deptlist");
-		mav.addObject("type", type);
-		mav.addObject("val", val);
-		mav.addObject("dlist", dlist);
-		return mav;
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("type", type);
+		map.put("val", val);
+		map.put("dlist", dlist);
+		return map;
 	}
-	
+
 	@GetMapping("/admin/corp/deptdel")
 	public String deptdel(int deptid) {
 		dservice.delDepts(deptid);
@@ -115,17 +170,24 @@ public class DeptsController {
 	}
 
 	@GetMapping("/corp/joblvlist")
-	public String joblvlist(ModelMap map) {
-		ArrayList<JoblvsDto> jlist = jservice.getAll();
-		map.addAttribute("jlist", jlist);
-//		System.out.println(jlist.get(0).getJoblvidx());
-		return "corp/joblvlist";
+	public Map joblvlist() {
+		boolean flag = true;
+		ArrayList<JoblvsDto> jlist = new ArrayList<JoblvsDto>();
+		try {
+			jlist = jservice.getAll();
+		} catch (Exception e) {
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("jlist", jlist);
+		return map;
 	}
 
-	@GetMapping("/admin/corp/joblvadd")
-	public String joblvaddform() {
-		return "corp/joblvadd";
-	}
+//	@GetMapping("/admin/corp/joblvadd")
+//	public String joblvaddform() {
+//		return "corp/joblvadd";
+//	}
 
 	//
 	@GetMapping("/admin/corp/joblvtestadd")
@@ -141,15 +203,31 @@ public class DeptsController {
 //	}
 
 	@PostMapping("/admin/corp/joblvadd")
-	public String joblvadd(JoblvsDto dto, Model model) {
-		// Process and save the department using your service
-		jservice.save(dto); // Assuming dservice is your service class
-
-		model.addAttribute("message", "직급이 추가되었습니다."); // Add success message to model
-		System.out.println(dto.getJoblvid());
-		System.out.println(dto.getJoblvnm());
-		// Return the view name where you want to redirect after successful addition
-		return "redirect:/corp/joblvlist"; // Redirect to department list page
+	public Map joblvadd(JoblvsDto dto) {
+		System.out.println(dto);
+		boolean flag = true;
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth.getAuthorities().toString().equals("[ROLE_ADMIN]")) {
+				System.out.println(jservice.getByJoblvId(dto.getJoblvid()));
+				if (jservice.getByJoblvId(dto.getJoblvid()).isEmpty()) {
+					jservice.save(dto);
+				} else {
+					System.out.println("========error1");
+					flag = false;
+				}
+			} else {
+				System.out.println("========error2");
+				flag = false;
+			}
+		} catch (Exception e) {
+			System.out.println("========error3");
+			flag = false;
+		}
+		Map map = new HashMap();
+		map.put("flag", flag);
+//		map.put("message", "직급이 추가되었습니다."); // Add success message to model
+		return map;
 	}
 
 //	@GetMapping("/corp/joblvinfo")
@@ -178,20 +256,73 @@ public class DeptsController {
 	}
 
 	@PostMapping("/corp/getjoblvby")
-	public ModelAndView getjoblvby(String val, int type) {
+	public Map getjoblvby(String val, int type) {
+		boolean flag = true;
 		ArrayList<JoblvsDto> jlist = new ArrayList<JoblvsDto>();
-		if (type == 1) {
-			jlist = jservice.getByJoblvId(Integer.parseInt(val));
-		} else if (type == 2) {
-			jlist = jservice.getByjoblvnmLike(val);
+		try {
+			if (type == 1) {
+				if (val == "") {
+					jlist = jservice.getByjoblvnmLike(val);
+				} else {
+					try {
+						jlist = jservice.getByJoblvId(Integer.parseInt(val));
+					} catch (NumberFormatException var3) {
+						jlist = jservice.getByjoblvnmLike(val);
+					}
+				}
+
+			} else if (type == 2) {
+				jlist = jservice.getByjoblvnmLike(val);
+			}
+
+		} catch (Exception e) {
+			flag = false;
 		}
-		ModelAndView mav = new ModelAndView("corp/joblvlist");
-		mav.addObject("type", type);
-		mav.addObject("val", val);
-		mav.addObject("jlist", jlist);
-		return mav;
+		Map map = new HashMap();
+		map.put("flag", flag);
+		map.put("type", type);
+		map.put("val", val);
+		map.put("jlist", jlist);
+		return map;
 	}
-	
+
+//	@PostMapping("/corp/getdeptby")
+//	public Map getdeptby(String val, int type) {
+//		boolean flag = true;
+//		ArrayList<DeptsDto> dlist = new ArrayList<DeptsDto>();
+//		try {
+//			if (type == 1) {
+//				System.out.println("val:" + val);
+//				dlist = dservice.getByDeptNm(val);
+//				System.out.println("dlist:" + dlist);
+//			} else if (type == 2) {
+//				System.out.println("===error1===");
+//				System.out.println("val:" + val);
+//				if (!val.isEmpty()) {
+//					ArrayList<MembersDto> mlist = mservice.getByUsersLike(val);
+//					for (MembersDto mdto : mlist) {
+//						ArrayList<DeptsDto> mgriddlist = dservice.getByMgrId(mdto.getMemberid());
+//						for (DeptsDto ddto : mgriddlist) {
+//							dlist.add(ddto);
+//						}
+//					}
+//				} else {
+//					dlist = dservice.getByDeptNm(val);
+//				}
+//
+//			}
+//		} catch (Exception e) {
+//			System.out.println("===error1===");
+//			flag = false;
+//		}
+//		Map map = new HashMap();
+//		map.put("flag", flag);
+//		map.put("type", type);
+//		map.put("val", val);
+//		map.put("dlist", dlist);
+//		return map;
+//	}
+
 	@GetMapping("/admin/corp/joblvdel")
 	public String joblvdel(int joblvidx) {
 		jservice.delJoblvs(joblvidx);

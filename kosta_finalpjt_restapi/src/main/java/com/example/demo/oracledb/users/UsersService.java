@@ -51,8 +51,8 @@ public class UsersService {
 	}
 
 	// 비밀번호 수정
-	public void updatePwd(UsersDto dto) {
-		dao.updatePwd(dto.getId(), passwordEncoder.encode(dto.getNewpwd()));
+	public void updatePwd(String id, String newpwd) {
+		dao.updatePwd(id, passwordEncoder.encode(newpwd));
 	}
 
 	// user 더미 데이터 생성 용도
