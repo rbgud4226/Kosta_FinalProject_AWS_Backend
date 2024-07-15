@@ -49,19 +49,6 @@ public class SecurityConfiguration {
 						.requestMatchers("/", "/error", "/login", "/idcheck", "/user/**", "/member/**", "/corp/**", "/files/**", "/chat/**","/mail/**").permitAll()
 						.anyRequest().permitAll()
 						)
-//				.formLogin((login) -> login.loginPage("/loginform")
-//						.loginProcessingUrl("/login")
-//						.failureForwardUrl("/loginerror")
-//						.usernameParameter("id")
-//						.passwordParameter("pwd")
-//						.defaultSuccessUrl("/", true).permitAll()
-//						.successHandler(new MySuccessHandler())
-//						.failureHandler(new MyFailureHandler())
-//						);
-//				.and()
-//						.logout()
-//						.logoutUrl("/logout")
-//						.logoutSuccessUrl("/")
 			.addFilterBefore(new JwtAuthenticationFilter(myTokenProvider), UsernamePasswordAuthenticationFilter.class);
 		http.sessionManagement(configure -> configure.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); //>>세터사용하지 않게다
 		return http.build();

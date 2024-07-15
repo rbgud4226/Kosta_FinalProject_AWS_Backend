@@ -13,17 +13,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	@Value("${allowed.ip.frontaddress}")
 	private String ipfrontaddress;
 	
-	@Value("${allowed.dns.address}")
-	private String dnsaddress;
+//	@Value("${allowed.dns.address}")
+//	private String dnsaddress;
 	
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
 		config.enableSimpleBroker("/room" , "/recent");
 		config.setApplicationDestinationPrefixes("/send");
 	}
-
+//dnsaddress
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/ws").setAllowedOriginPatterns(ipfrontaddress, dnsaddress).withSockJS();
+		registry.addEndpoint("/ws").setAllowedOriginPatterns("http://localhost:3000").withSockJS();
 	}
 }

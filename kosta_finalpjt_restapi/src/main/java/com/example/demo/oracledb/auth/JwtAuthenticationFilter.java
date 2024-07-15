@@ -23,11 +23,12 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 	@Value("${allowed.ip.frontaddress}")
 	private String ipfrontaddress;
 	
-	@Value("${allowed.dns.address}")
-	private String dnsaddress;
+//	@Value("${allowed.dns.address}")
+//	private String dnsaddress;
 	
     private final MyTokenProvider myTokenProvider;
-    private final List<String> allowedOrigins = Arrays.asList(ipfrontaddress, dnsaddress);
+  //dnsaddress
+    private final List<String> allowedOrigins = Arrays.asList("http://localhost:3000");
 
     @Override // 필터가 할일 구현
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
