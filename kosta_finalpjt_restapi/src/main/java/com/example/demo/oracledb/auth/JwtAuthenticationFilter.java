@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
@@ -18,8 +19,15 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
+	
+	@Value("${allowed.ip.frontaddress}")
+	private String ipfrontaddress;
+	
+	@Value("${allowed.dns.address}")
+	private String dnsaddress;
+	
     private final MyTokenProvider myTokenProvider;
-    private final List<String> allowedOrigins = Arrays.asList("http://localhost:3000");
+    private final List<String> allowedOrigins = Arrays.asList(ipfrontaddress, dnsaddress);
 
     @Override // 필터가 할일 구현
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -45,7 +53,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
         String token = myTokenProvider.resolveToken((HttpServletRequest) request);
         if (token != null && myTokenProvider.validateToken(token)) {
-            Authentication authentication = myTokenProvider.getAuthenticatiln(token);
+            Authentication authentication = myTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);

@@ -38,7 +38,10 @@ public class MessageService {
 
 	@Value("${spring.servlet.multipart.location}")
 	private String path;
-
+	
+	@Value("${allowed.ip.backaddress}")
+	private String ipbackaddress;
+	
 	public Message save(MessageDto message, String roomId) {
 		ChatRoom chatroom = chatroomdao.findByChatroomid(roomId);
 		if (chatroom == null) {
@@ -92,7 +95,7 @@ public class MessageService {
 	}
 
 	public void fileTypeMessage(MessageDto chatMessage, String roomId) {
-		String wpath = "http://localhost:8081/files/" + chatMessage.getFileName();
+		String wpath = ipbackaddress + "/files/" + chatMessage.getFileName();
 		chatMessage.setFileRoot(wpath);
 		chatMessage.setFileId(UUID.randomUUID().toString());
 		chatMessage.setContent("FILE");
@@ -105,7 +108,7 @@ public class MessageService {
 			File newFile = new File(fileRoot);
 			file.transferTo(newFile);
 			Map<String, Object> response = new HashMap<>();
-			String wpath = "http://localhost:8081/files/" + originalFilename;
+			String wpath = ipbackaddress + "/files/" + originalFilename;
 			response.put("fileName", originalFilename);
 			response.put("fileRoot", wpath);
 			return response;

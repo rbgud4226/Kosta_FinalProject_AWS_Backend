@@ -84,7 +84,7 @@ public class MyTokenProvider {
 	}
 
 	// 토큰 인증
-	public Authentication getAuthenticatiln(String token) {
+	public Authentication getAuthentication(String token) {
 		// 토큰에 저장된 username을 꺼내서 db 검색
 		UserDetails user = tokenUserDetailsService.loadUserByUsername(getUserName(token));
 		return new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
