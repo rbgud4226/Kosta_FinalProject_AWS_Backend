@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,7 +65,7 @@ public class MembersController {
 	@Value("${spring.servlet.multipart.location}")
 	private String path;
 
-	private String dirName = "/src/main/resources/static/img/member/";
+//	private String dirName = "/src/main/resources/static/img/member/";
 
 	@GetMapping("/member/memberlist")
 	public Map memberlist() {
@@ -257,23 +256,29 @@ public class MembersController {
 		if (memberimgnm.equals("") || memberimgnm.equals("undefined") || memberimgnm.equals("null")
 				|| memberimgnm == null) {
 			try {
-				InputStream istream = resourceLoader.getResource("classpath:/static/img/common/human.png")
-						.getInputStream();
+				String defaultfpath = "file:" + path;
+				Resource resource = resourceLoader.getResource(defaultfpath + "human.png");
+//				InputStream istream = resourceLoader.getResource("classpath:/static/img/common/human.png")
+//				InputStream istream = resourceLoader.getResource(path + "human.png")
+				InputStream istream = resource.getInputStream();
 				header.setContentType(MediaType.IMAGE_PNG);
 				result = new ResponseEntity<byte[]>(istream.readAllBytes(), header, HttpStatus.OK);
+				istream.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {
-			File f = new File(path + dirName + memberimgnm);
-			Path pathf = Paths.get(path + dirName + memberimgnm);
+//			File f = new File(path + dirName + memberimgnm);
+			File f = new File(path + memberimgnm);
+//			Path pathf = Paths.get(path + dirName + memberimgnm);
+			Path pathf = Paths.get(path + memberimgnm);
 			try {
 				header.add("Content-Type", Files.probeContentType(f.toPath()));
 				if (Files.exists(pathf)) {
 					result = new ResponseEntity<byte[]>(FileCopyUtils.copyToByteArray(f), header, HttpStatus.OK);
 				} else {
-					InputStream istream = resourceLoader.getResource("classpath:/static/img/common/human.png")
+					InputStream istream = resourceLoader.getResource(path + "human.png")
 							.getInputStream();
 					header.setContentType(MediaType.IMAGE_PNG);
 					result = new ResponseEntity<byte[]>(istream.readAllBytes(), header, HttpStatus.OK);
@@ -337,7 +342,8 @@ public class MembersController {
 				String f2 = oname.substring(oname.lastIndexOf(".") + 1, oname.length());
 				String f3 = oname.substring(0, oname.lastIndexOf("."));
 				String fname = f3 + " (" + mdto.getUserid().getUsernm() + ")." + f2;
-				File newFile = new File(path + dirName + fname);
+//				File newFile = new File(path + dirName + fname);
+				File newFile = new File(path + fname);
 				try {
 					dto.getMemberimgf().transferTo(newFile);
 					mdto.setMemberimgnm(newFile.getName());
