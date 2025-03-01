@@ -36,6 +36,7 @@ public class ChatRoom {
 
 	@OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@JsonIgnore
+	//@JsonManagedReferce가 맞는 코드
 	private List<RoomUser> roomUsers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
